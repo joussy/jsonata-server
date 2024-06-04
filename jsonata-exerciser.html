@@ -26,23 +26,25 @@
             theme: 'vs-dark',
         };
         let monacoInput = monaco.editor.create(document.querySelector('.monaco-input'), {
-            ...conf, value: `
-{
+            ...conf, value:
+                `{
     "sample1": "test1",
     "sample2": "test2",
     "sample3": "test3"
-}
-            `
+}`
         });
         let monacoExpression = monaco.editor.create(document.querySelector('.monaco-expression'), {
-            ...conf, value: `
-sample1
-            `
+            ...conf, value:
+                `sample1`
         });
-        let monacoResult = monaco.editor.create(document.querySelector('.monaco-result'), { ...conf, value: "" });
+        let monacoResult = monaco.editor.create(document.querySelector('.monaco-result'), {
+            ...conf,
+            value: "",
+            readOnly: true
+        });
 
         window.monacoInput = monacoInput;
-        function onEditorChange(e) {
+        function onEditorChange() {
             const inputText = monacoInput.getValue();
             let jsonInput = null;
             const expressionText = monacoExpression.getValue();
@@ -74,6 +76,7 @@ sample1
         }
         monacoInput.onDidChangeModelContent(onEditorChange)
         monacoExpression.onDidChangeModelContent(onEditorChange)
+        onEditorChange();
     </script>
     <div class="container">
         <div class="col-md-12">
