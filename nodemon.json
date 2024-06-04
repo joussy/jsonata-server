@@ -1,6 +1,0 @@
-{
-    "verbose": true,
-    "watch": ["src/"],
-    "pollingInterval": 1000,
-    "legacyWatch": true
-}
