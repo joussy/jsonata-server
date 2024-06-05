@@ -10,11 +10,12 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link href="https://cdn.jsdelivr.net/npm/vscode-codicons@0.0.17/dist/codicon.min.css" rel="stylesheet">
     <style>
-        body, html {
-    margin: 0;
-    height: 100%;
-    overflow: hidden;
-}
+        body,
+        html {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+        }
 
         #monaco-input,
         #monaco-expression {
@@ -69,33 +70,52 @@
 
         window.monacoInput = monacoInput;
         function onEditorChange() {
+            const local = false;
             const inputText = monacoInput.getValue();
             let jsonInput = null;
             const expressionText = monacoExpression.getValue();
-            try {
-                jsonInput = JSON.parse(inputText);
+            if (local) {
+                try {
+                    jsonInput = JSON.parse(inputText);
+                }
+                catch (error) {
+                    monacoResult.setValue(`Input error:\n${error.message}`);
+                }
+                if (!jsonInput) {
+                    return;
+                }
+                try {
+                    const compiledExpression = jsonata(expressionText);
+                    compiledExpression.evaluate(jsonInput, {}, (error, success) => {
+                        if (error) {
+                            console.log(error);
+                            monacoResult.setValue(error);
+                            return;
+                        } else {
+                            monacoResult.setValue(success ?? "");
+                        }
+                    });
+                }
+                catch (error) {
+                    const errorText = JSON.stringify(error, null, 2);
+                    monacoResult.setValue(`Template error:\n${errorText}`);
+                }
             }
-            catch (error) {
-                monacoResult.setValue(`Input error:\n${error.message}`);
-            }
-            if (!jsonInput) {
-                return;
-            }
-            try {
-                const compiledExpression = jsonata(expressionText);
-                compiledExpression.evaluate(jsonInput, {}, (error, success) => {
-                    if (error) {
-                        console.log(error);
-                        monacoResult.setValue(error);
-                        return;
-                    } else {
-                        monacoResult.setValue(success ?? "");
+            else {
+                var http = new XMLHttpRequest();
+                var url = '/jsonata';
+                http.open('POST', url, true);
+
+                //Send the proper header information along with the request
+                http.setRequestHeader('Content-type', 'application/json');
+
+                http.onreadystatechange = function () {//Call a function when the state changes.
+                    // if (http.readyState == 4 && http.status == 200) {
+                    if (http.readyState == 4) {
+                        monacoResult.setValue(http.responseText);
                     }
-                });
-            }
-            catch (error) {
-                const errorText = JSON.stringify(error, null, 2);
-                monacoResult.setValue(`Template error:\n${errorText}`);
+                }
+                http.send(JSON.stringify({input: inputText, expression: expressionText}));
             }
         }
         monacoInput.onDidChangeModelContent(onEditorChange)
