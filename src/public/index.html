@@ -123,8 +123,8 @@
 
             document.getElementById('monaco-input').style.width = leftPercentage + '%';
             document.getElementById('monaco-expression').style.width = rightPercentage + '%';
-            monacoInput.layout({ width: offsetLeft, height: 400 });
-            monacoExpression.layout({ width: offsetRight, height: 400 });
+            monacoInput.layout({ width: offsetLeft - 4, height: 400 });
+            monacoExpression.layout({ width: offsetRight - 4, height: 400 });
         });
 
         document.addEventListener('mouseup', function (e) {
