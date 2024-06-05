@@ -27,4 +27,4 @@ COPY . .
 EXPOSE 3000
 
 # Run the application.
-CMD node src/app.js
+CMD node bin/www
