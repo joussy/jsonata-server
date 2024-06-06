@@ -4,10 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>Jsonata Playground</title>
-    <script src="https://unpkg.com/petite-vue" defer init></script>
     <script src="https://cdn.jsdelivr.net/npm/jsonata/jsonata.min.js"></script>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link href="https://cdn.jsdelivr.net/npm/vscode-codicons@0.0.17/dist/codicon.min.css" rel="stylesheet">
     <style>
         body,
@@ -37,127 +34,119 @@
 </head>
 
 <body>
-
-    <div v-scope="{ count: 0 }">
-        {{ count }}
-        <button @click="count++">inc</button>
+    <div v-scope
+    @vue:mounted="initializeEditors()">
+        <div>
+            {{ count }}
+            <button @click="count++">inc</button>
+        </div>
+        <div id="cont">
+            <div id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
+            <div id="divider"></div>
+            <div id="monaco-expression" style="min-height: 400px;border: 1px solid black"></div>
+        </div>
+        <div id="monaco-result" style="min-height: 400px;border: 1px solid black"></div>
     </div>
+
     <script type="module">
         import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/+esm';
+        import { createApp } from 'https://unpkg.com/petite-vue?module';
 
-        var conf = {
-            language: 'jsonp',
-            theme: 'vs-dark',
-            // automaticLayout: true
-        };
-        let monacoInput = monaco.editor.create(document.querySelector('#monaco-input'), {
-            ...conf, value:
-                `{
+        function onEditorChange2(e, obj) {
+            console.log(e);
+            // const inputText = obj.monacoInput.getValue();
+            // console.log(inputText);
+        }
+
+        createApp({
+            count: 1,
+            local: false,
+            initializeEditors() {
+                const conf = {
+                    language: 'javascript',
+                    theme: 'vs-dark'
+                };
+                document.monacoInput = monaco.editor.create(document.querySelector('#monaco-input'), {
+                    ...conf,
+                    value: `{
     "sample1": "test1",
     "sample2": "test2",
     "sample3": "test3"
 }`
-        });
-        let monacoExpression = monaco.editor.create(document.querySelector('#monaco-expression'), {
-            ...conf, value:
-                `sample1`
-        });
-        let monacoResult = monaco.editor.create(document.querySelector('#monaco-result'), {
-            ...conf,
-            value: "",
-            readOnly: true
-        });
-
-        window.monacoInput = monacoInput;
-        function onEditorChange() {
-            const local = false;
-            const inputText = monacoInput.getValue();
-            let jsonInput = null;
-            const expressionText = monacoExpression.getValue();
-            if (local) {
-                try {
-                    jsonInput = JSON.parse(inputText);
-                }
-                catch (error) {
-                    monacoResult.setValue(`Input error:\n${error.message}`);
-                }
-                if (!jsonInput) {
-                    return;
-                }
-                try {
-                    const compiledExpression = jsonata(expressionText);
-                    compiledExpression.evaluate(jsonInput, {}, (error, success) => {
-                        if (error) {
-                            console.log(error);
-                            monacoResult.setValue(error);
-                            return;
-                        } else {
-                            monacoResult.setValue(success ?? "");
-                        }
-                    });
-                }
-                catch (error) {
-                    const errorText = JSON.stringify(error, null, 2);
-                    monacoResult.setValue(`Template error:\n${errorText}`);
-                }
-            }
-            else {
-                var http = new XMLHttpRequest();
-                var url = '/jsonata';
-                http.open('POST', url, true);
-
-                //Send the proper header information along with the request
-                http.setRequestHeader('Content-type', 'application/json');
-
-                http.onreadystatechange = function () {//Call a function when the state changes.
-                    // if (http.readyState == 4 && http.status == 200) {
-                    if (http.readyState == 4) {
-                        monacoResult.setValue(http.responseText);
+                });
+                document.monacoExpression = monaco.editor.create(document.querySelector('#monaco-expression'), {
+                    ...conf,
+                    value: `sample1`
+                });
+                document.monacoResult = monaco.editor.create(document.querySelector('#monaco-result'), {
+                    ...conf,
+                    value: "",
+                    readOnly: true
+                });
+                document.monacoInput.onDidChangeModelContent(e => this.onEditorChange());
+                document.monacoExpression.onDidChangeModelContent(e => this.onEditorChange());
+                this.onEditorChange();
+            },
+            async onEditorChange() {
+                const inputText = document.monacoInput.getValue();
+                const expressionText = document.monacoExpression.getValue();
+                if (this.local) {
+                    try {
+                        const jsonInput = JSON.parse(inputText);
+                        const compiledExpression = jsonata(expressionText);
+                        const result = await compiledExpression.evaluate(jsonInput);
+                        document.monacoResult.setValue(JSON.stringify(result, null, 2));
+                    } catch (error) {
+                        document.monacoResult.setValue(`Error:\n${error.message}`);
+                    }
+                } else {
+                    try {
+                        const response = await fetch('/jsonata', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                input: inputText,
+                                expression: expressionText,
+                                csvOutput: true
+                            })
+                        });
+                        const data = await response.text();
+                        document.monacoResult.setValue(data);
+                    } catch (error) {
+                        document.monacoResult.setValue(`Error:\n${error.message}`);
                     }
                 }
-                http.send(JSON.stringify({input: inputText, expression: expressionText, csvOutput: true}));
+            },
+            onMouseDown(e) {
+                this.isResizing = true;
+            },
+            onMouseMove(e) {
+                if (!this.isResizing) return;
+                const containerOffsetLeft = document.getElementById('cont').offsetLeft;
+                const offsetRight = document.getElementById('cont').offsetWidth - (e.clientX - containerOffsetLeft);
+                const offsetLeft = e.clientX - containerOffsetLeft;
+
+                const containerWidth = document.getElementById('cont').offsetWidth;
+                const leftPercentage = (offsetLeft / containerWidth) * 100;
+                const rightPercentage = 100 - leftPercentage;
+
+                document.getElementById('monaco-input').style.width = leftPercentage + '%';
+                document.getElementById('monaco-expression').style.width = rightPercentage + '%';
+                this.monacoInput.layout({ width: offsetLeft - 4, height: 400 });
+                this.monacoExpression.layout({ width: offsetRight - 4, height: 400 });
+            },
+            onMouseUp(e) {
+                this.isResizing = false;
+            },
+            isResizing: false,
+            mounted() {
+                initializeEditors();
             }
-        }
-        monacoInput.onDidChangeModelContent(onEditorChange)
-        monacoExpression.onDidChangeModelContent(onEditorChange)
-        onEditorChange();
-
-        //Resize shit
-        const divider = document.getElementById('divider');
-
-        let isResizing = false;
-
-        divider.addEventListener('mousedown', function (e) {
-            isResizing = true;
-        });
-
-        document.addEventListener('mousemove', function (e) {
-            if (!isResizing) return;
-            const containerOffsetLeft = document.getElementById('cont').offsetLeft;
-            const offsetRight = document.getElementById('cont').offsetWidth - (e.clientX - containerOffsetLeft);
-            const offsetLeft = e.clientX - containerOffsetLeft;
-
-            const containerWidth = document.getElementById('cont').offsetWidth;
-            const leftPercentage = (offsetLeft / containerWidth) * 100;
-            const rightPercentage = 100 - leftPercentage;
-
-            document.getElementById('monaco-input').style.width = leftPercentage + '%';
-            document.getElementById('monaco-expression').style.width = rightPercentage + '%';
-            monacoInput.layout({ width: offsetLeft - 4, height: 400 });
-            monacoExpression.layout({ width: offsetRight - 4, height: 400 });
-        });
-
-        document.addEventListener('mouseup', function (e) {
-            isResizing = false;
-        });
+        }).mount();
 
     </script>
-    <div id="cont">
-        <div id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
-        <div id="divider"></div>
-        <div id="monaco-expression" style="min-height: 400px;border: 1px solid black"></div>
-    </div>
-    <div id="monaco-result" style="min-height: 400px;border: 1px solid black"></div>
 </body>
 
 </html>
