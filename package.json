@@ -7,7 +7,8 @@
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9", 
+    "csv": "^6.3.9",
+    "debug": "~2.6.9",
     "express": "~4.16.1",
     "jsonata": "^2.0.5",
     "morgan": "~1.9.1"

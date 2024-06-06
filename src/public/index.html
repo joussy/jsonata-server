@@ -115,7 +115,7 @@
                         monacoResult.setValue(http.responseText);
                     }
                 }
-                http.send(JSON.stringify({input: inputText, expression: expressionText}));
+                http.send(JSON.stringify({input: inputText, expression: expressionText, csvOutput: true}));
             }
         }
         monacoInput.onDidChangeModelContent(onEditorChange)
