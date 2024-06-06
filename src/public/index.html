@@ -83,8 +83,8 @@
                     value: "",
                     readOnly: true
                 });
-                document.monacoInput.onDidChangeModelContent(e => this.onEditorChange());
-                document.monacoExpression.onDidChangeModelContent(e => this.onEditorChange());
+                document.monacoInput.onDidChangeModelContent(this.onEditorChange.bind(this));
+                document.monacoExpression.onDidChangeModelContent(this.onEditorChange.bind(this));
                 this.onEditorChange();
             },
             async onEditorChange() {
