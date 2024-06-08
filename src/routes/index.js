@@ -7,7 +7,6 @@ router.get('/', function (req, res, next) {
   res.render('index');
 });
 
-
 router.post('/jsonata', async (req, res, next) => {
   let jsonInput;
   // await new Promise(resolve => setTimeout(resolve, 5000));
