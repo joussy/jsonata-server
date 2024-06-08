@@ -92,14 +92,14 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css
                     </div>
                 </div>
                 <div class="col-auto">
-                    <button v-show="!processing" type="button" class="btn btn-light" @click="compute">
-                        <span v-show="!processing">Transform</span>
+                    <button v-show="!processing" type="button" class="btn border border-primary" @click="compute">
+                        Convert <i class="bi bi-play"></i>
                     </button>
                     <span v-show="processing" class="spinner-border text-primary" role="status"></span>
                 </div>
                 <div class="col-auto ms-auto">
-                    <a class="btn btn-dark" href="https://docs.jsonata.org/simple" target="_blank">
-                        <i class="p-2 bi bi-box-arrow-up-right" ></i><span>Jsonata Docs</span>
+                    <a class="btn border" href="https://docs.jsonata.org/simple" target="_blank">
+                        <i class="p-2 bi bi-box-arrow-up-right"></i><span>Jsonata Docs</span>
                     </a>
                 </div>
             </div>
