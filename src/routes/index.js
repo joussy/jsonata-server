@@ -1,10 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const jsonata = require('jsonata');
-const { stringify } = require('csv-stringify');
-const { promisify } = require('util');
-
-const stringifyAsync = promisify(stringify);
+const { stringify, parse } = require('csv/sync');
 
 router.get('/', function (req, res, next) {
   // var res = jsonata().evaluate(req, {});
@@ -16,11 +13,25 @@ router.get('/', function (req, res, next) {
 router.post('/jsonata', async (req, res, next) => {
   let jsonInput;
 
-  // Parse JSON input
-  try {
-    jsonInput = JSON.parse(req.body.input);
-  } catch (error) {
-    return res.status(400).send({ error: `Input error: ${error.message}` });
+  if (req.body.csvInput) {
+    // Parse CSV input
+    try {
+      jsonInput = parse(req.body.input, {
+        columns: true,
+        skip_empty_lines: true,
+        delimiter: req.body.csvInputDelimiter
+      });
+    } catch (error) {
+      return res.status(400).send({ error: `Input error: ${error.message}` });
+    }
+  }
+  else {
+    // Parse JSON input
+    try {
+      jsonInput = JSON.parse(req.body.input);
+    } catch (error) {
+      return res.status(400).send({ error: `Input error: ${error.message}` });
+    }
   }
 
   // Check for empty JSON input
@@ -43,14 +54,13 @@ router.post('/jsonata', async (req, res, next) => {
 
       // Convert result to CSV
       try {
-        const csvOutput = await stringifyAsync(jsonResult, { header: true });
+        const csvOutput = stringify(jsonResult, { header: true, delimiter:  req.body.csvOutputDelimiter});
         return res.send(csvOutput);
       } catch (err) {
         return res.status(400).send({ error: `CSV output error: ${err.message}` });
       }
     }
-    else
-    {
+    else {
       return res.send(JSON.stringify(jsonResult, null, 2));
     }
 
