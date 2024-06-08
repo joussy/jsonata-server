@@ -1,6 +1,5 @@
 # JSONata Server
-
-A server-side [JSONata](https://github.com/jsonata-js/jsonata) processor.
+A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) that supports JSON and CSV input/output, with a feature-rich UI editor powered by [Monaco Editor](https://github.com/microsoft/monaco-editor)
 
 ## Features
 - **Unlimited Processing Time**: Server-side processing removes browser limitations.
@@ -34,18 +33,21 @@ A server-side [JSONata](https://github.com/jsonata-js/jsonata) processor.
 1. Clone the repository:
    ```sh
    git clone https://github.com/joussy/jsonata-playground.git
+   ```
 2. Navigate to the project directory:
    ```sh
    cd jsonata-server
+   ```
 3. Install the dependencies
    ```sh
    npm install
+   ```
 
 ### Running the Server
 Start the server:
    ```sh
    npm run start
-
+   ```
 ### Accessing the Client
 Open your browser and navigate to http://localhost:3000
 ### Contributing
@@ -58,15 +60,19 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ### Building the Docker Image
 Clone the repository:
 ```sh
-git clone https://github.com/your-repo/jsonata-server.git
+   git clone https://github.com/joussy/jsonata-playground.git
+```
 1. Navigate to the project directory:
 ```sh
 cd jsonata-server
+```
 2. Build the Docker image:
 ```sh
 docker build -t jsonata-server .
+```
 ### Running the Docker Container
 3. Run the Docker container:
 ```sh
 docker run -d -p 3000:3000 --name jsonata-server jsonata-server
-Open your browser and navigate to http://localhost:3000
+```
+4. Open your browser and navigate to http://localhost:3000
