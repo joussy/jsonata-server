@@ -37,8 +37,8 @@
 <body>
     <div id="app" @vue:mounted="initializeEditors()">
         <label>
-            <input v-model="csvMode" name="csv-mode" type="checkbox" role="switch" />
-            CSV Mode
+            <input v-model="csvOutputMode" name="csv-mode" type="checkbox" role="switch" />
+            CSV Output Mode
         </label>
         <div id="cont">
             <div id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
@@ -62,13 +62,13 @@
             data() {
                 return {
                     local: false,
-                    csvMode: true,
+                    csvOutputMode: false,
                     isResizing: false,
                 }
             },
             watch: {
-                csvMode: function (newVal, oldVal) {
-                    console.log('Prop changed: ', newVal, ' | was: ', oldVal)
+                csvOutputMode: function (newVal, oldVal) {
+                    this.onEditorChange();
                 }
             },
             mounted() {
@@ -85,15 +85,20 @@
                     };
                     document.monacoInput = monaco.editor.create(document.querySelector('#monaco-input'), {
                         ...conf,
-                        value: `{
+                        value: `[{
     "sample1": "test1",
     "sample2": "test2",
     "sample3": "test3"
-}`
+},
+{
+    "sample1": "test4",
+    "sample2": "test5",
+    "sample3": "test6"
+}]`
                     });
                     document.monacoExpression = monaco.editor.create(document.querySelector('#monaco-expression'), {
                         ...conf,
-                        value: `sample1`
+                        value: `$`
                     });
                     document.monacoResult = monaco.editor.create(document.querySelector('#monaco-result'), {
                         ...conf,
@@ -126,7 +131,7 @@
                                 body: JSON.stringify({
                                     input: inputText,
                                     expression: expressionText,
-                                    csvOutput: true
+                                    csvOutput: this.csvOutputMode
                                 })
                             });
                             const data = await response.text();

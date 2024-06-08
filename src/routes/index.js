@@ -51,7 +51,7 @@ router.post('/jsonata', async (req, res, next) => {
     }
     else
     {
-      return res.send(jsonResult);
+      return res.send(JSON.stringify(jsonResult, null, 2));
     }
 
   } catch (error) {
