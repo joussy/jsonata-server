@@ -42,7 +42,7 @@
         </label>
         <div id="cont">
             <div id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
-            <div id="divider"></div>
+            <div id="divider" @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove" ></div>
             <div id="monaco-expression" style="min-height: 400px;border: 1px solid black"></div>
         </div>
         <div id="monaco-result" style="min-height: 400px;border: 1px solid black"></div>
@@ -74,8 +74,8 @@
             mounted() {
                 this.initializeEditors();
                 window.addEventListener('mousemove', this.onMouseMove)
-                window.addEventListener('mousedown', this.onMouseDown)
-                window.addEventListener('mouseup', this.onMouseUp)
+                // window.addEventListener('mousedown', this.onMouseDown)
+                // window.addEventListener('mouseup', this.onMouseUp)
             },
             methods: {
                 initializeEditors() {
