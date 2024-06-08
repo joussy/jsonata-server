@@ -68,6 +68,7 @@
                 Auto-Refresh
                 <input v-model="autoRefresh" type="checkbox" role="switch" />
             </label>
+            <span v-show="processing" aria-busy="true"></span>
         </fieldset>
     </div>
 
@@ -91,7 +92,8 @@
                     autoRefresh: true,
                     csvInputDelimiter: ',',
                     csvOutputDelimiter: ',',
-                    initialized: false
+                    initialized: false,
+                    processing: false
                 }
             },
             watch: {
@@ -191,6 +193,7 @@
                     }
                 },
                 async compute() {
+                    this.processing = true;
                     const inputText = document.monacoInput.getValue();
                     const expressionText = document.monacoExpression.getValue();
                     try{
@@ -221,6 +224,7 @@
                     } catch (error) {
                         document.monacoResult.setValue(`Error:\n${error.message}`);
                     }
+                    this.processing = false;
                 },
                 onMouseDown(e) {
                     this.isResizing = true;
