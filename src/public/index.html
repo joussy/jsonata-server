@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8">
     <title>Jsonata Playground</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsonata/jsonata.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/vscode-codicons@0.0.17/dist/codicon.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.red.min.css" />
     <style>
@@ -65,6 +64,10 @@
                     <option value="\t">\t</option>
                 </select>
             </label>
+            <label>
+                Auto-Refresh
+                <input v-model="autoRefresh" type="checkbox" role="switch" />
+            </label>
         </fieldset>
     </div>
 
@@ -82,33 +85,60 @@
         createApp({
             data() {
                 return {
-                    local: false,
                     csvOutputMode: false,
                     csvInputMode: false,
                     isResizing: false,
+                    autoRefresh: true,
                     csvInputDelimiter: ',',
-                    csvOutputDelimiter: ','
+                    csvOutputDelimiter: ',',
+                    initialized: false
                 }
             },
             watch: {
                 csvOutputMode() {
+                    this.saveConfigurationToLocalStorage();
                     this.onEditorChange();
                 },
                 csvInputMode() {
+                    this.saveConfigurationToLocalStorage();
                     this.onEditorChange();
                 },
                 csvInputDelimiter() {
+                    this.saveConfigurationToLocalStorage();
                     this.onEditorChange();
                 },
                 csvOutputDelimiter() {
+                    this.saveConfigurationToLocalStorage();
                     this.onEditorChange();
+                },
+                autoRefresh(){
+                    this.saveConfigurationToLocalStorage();
                 }
             },
             mounted() {
+                let config = localStorage.getItem("config");
+                if (config) {
+                    config = JSON.parse(config);
+                    this.autoRefresh = config.autoRefresh;
+                    this.csvOutputMode = config.csvOutputMode;
+                    this.csvInputMode = config.csvInputMode;
+                    this.csvInputDelimiter = config.csvInputDelimiter;
+                    this.csvOutputDelimiter = config.csvOutputDelimiter;
+                }
                 this.initializeEditors();
-                window.addEventListener('mousemove', this.onMouseMove)
+                this.initialized = true;
             },
             methods: {
+                saveConfigurationToLocalStorage() {
+                    let configAsString = JSON.stringify({
+                        csvOutputMode: this.csvOutputMode,
+                        csvInputMode: this.csvInputMode,
+                        autoRefresh: this.autoRefresh,
+                        csvInputDelimiter: this.csvInputDelimiter,
+                        csvOutputDelimiter: this.csvOutputDelimiter
+                    })
+                    localStorage.setItem("config", configAsString);
+                },
                 initializeEditors() {
                     const conf = {
                         language: 'javascript',
@@ -118,7 +148,7 @@
 
                     document.monacoInput = monaco.editor.create(document.querySelector('#monaco-input'), {
                         ...conf,
-                        value:
+                        value: localStorage.getItem('inputText') ??
                             `[{
     "sample1": "test1",
     "sample2": "test2",
@@ -137,50 +167,59 @@
                     });
                     document.monacoExpression = monaco.editor.create(document.querySelector('#monaco-expression'), {
                         ...conf,
-                        value: `$`
+                        value: localStorage.getItem('expressionText') ?? `$`
                     });
                     document.monacoResult = monaco.editor.create(document.querySelector('#monaco-result'), {
                         ...conf,
                         value: "",
                         readOnly: true
                     });
-                    document.monacoInput.onDidChangeModelContent(this.onEditorChange.bind(this));
-                    document.monacoExpression.onDidChangeModelContent(this.onEditorChange.bind(this));
-                    this.onEditorChange();
+                    document.monacoInput.onDidChangeModelContent(function() {
+                        this.onEditorChange()
+                    }.bind(this));
+                    document.monacoExpression.onDidChangeModelContent(function() {
+                        this.onEditorChange()
+                    }.bind(this));
+                    window.addEventListener('mousemove', this.onMouseMove)
                 },
-                async onEditorChange() {
+                onEditorChange() {
+                    if (this.autoRefresh && this.initialized) {
+                        if (this.timer) {
+                            clearTimeout(this.timer);
+                        }
+                        this.timer = setTimeout(this.compute.bind(this), 800);
+                    }
+                },
+                async compute() {
                     const inputText = document.monacoInput.getValue();
                     const expressionText = document.monacoExpression.getValue();
-                    if (this.local) {
-                        try {
-                            const jsonInput = JSON.parse(inputText);
-                            const compiledExpression = jsonata(expressionText);
-                            const result = await compiledExpression.evaluate(jsonInput);
-                            document.monacoResult.setValue(JSON.stringify(result, null, 2));
-                        } catch (error) {
-                            document.monacoResult.setValue(`Error:\n${error.message}`);
-                        }
-                    } else {
-                        try {
-                            const response = await fetch('/jsonata', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    input: inputText,
-                                    expression: expressionText,
-                                    csvOutput: this.csvOutputMode,
-                                    csvInput: this.csvInputMode,
-                                    csvInputDelimiter: this.csvInputDelimiter,
-                                    csvOutputDelimiter: this.csvOutputDelimiter
-                                })
-                            });
-                            const data = await response.text();
-                            document.monacoResult.setValue(data);
-                        } catch (error) {
-                            document.monacoResult.setValue(`Error:\n${error.message}`);
-                        }
+                    try{
+                        localStorage.setItem("inputText", inputText);
+                    }
+                    catch(e) {
+                        console.error(e)
+                    }
+                    localStorage.setItem("expressionText", expressionText);
+
+                    try {
+                        const response = await fetch('/jsonata', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                input: inputText,
+                                expression: expressionText,
+                                csvOutput: this.csvOutputMode,
+                                csvInput: this.csvInputMode,
+                                csvInputDelimiter: this.csvInputDelimiter,
+                                csvOutputDelimiter: this.csvOutputDelimiter
+                            })
+                        });
+                        const data = await response.text();
+                        document.monacoResult.setValue(data);
+                    } catch (error) {
+                        document.monacoResult.setValue(`Error:\n${error.message}`);
                     }
                 },
                 onMouseDown(e) {
