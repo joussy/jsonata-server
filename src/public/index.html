@@ -31,55 +31,60 @@
             cursor: ew-resize;
             position: relative;
         }
+
+        select {
+            width: auto;
+        }
     </style>
 </head>
 
 <body>
     <div id="app" @vue:mounted="initializeEditors()">
-        <label>
-            <input v-model="csvInputMode" type="checkbox" role="switch" />
-            CSV Input Mode
-        </label>
-        Input Delimiter: 
-        <select v-model="csvInputDelimiter" :disabled="!csvInputMode">
-            <option value=";">;</option>
-            <option value=",">,</option>
-            <option value="\t">\t</option>
-        </select>
-        <label>
-            <input v-model="csvOutputMode" type="checkbox" role="switch" />
-            CSV Output Mode
-        </label>
-        Output Delimiter: 
-        <select v-model="csvOutputDelimiter" :disabled="!csvOutputMode">
-            <option value=";">;</option>
-            <option value=",">,</option>
-            <option value="\t">\t</option>
-        </select>
-        <div id="cont">
-            <div id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
-            <div id="divider" @mousedown="onMouseDown" @mouseup="onMouseUp"></div>
-            <div id="monaco-expression" style="min-height: 400px;border: 1px solid black"></div>
-        </div>
-        <div id="monaco-result" style="min-height: 400px;border: 1px solid black"></div>
+        <fieldset class="grid">
+            <label>
+                CSV Input Mode
+                <input v-model="csvInputMode" type="checkbox" role="switch" />
+            </label>
+            <label v-show="csvInputMode">
+                Input Delimiter
+                <select v-model="csvInputDelimiter" :disabled="!csvInputMode">
+                    <option value=";">;</option>
+                    <option value=",">,</option>
+                    <option value="\t">\t</option>
+                </select>
+            </label>
+            <label>
+                CSV Output Mode
+                <input v-model="csvOutputMode" type="checkbox" role="switch" />
+            </label>
+            <label v-show="csvOutputMode">
+                Output Delimiter
+                <select v-model="csvOutputDelimiter">
+                    <option value=";">;</option>
+                    <option value=",">,</option>
+                    <option value="\t">\t</option>
+                </select>
+            </label>
+        </fieldset>
     </div>
+
+    <div id="cont">
+        <div id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
+        <div id="divider" @mousedown="onMouseDown" @mouseup="onMouseUp"></div>
+        <div id="monaco-expression" style="min-height: 400px;border: 1px solid black"></div>
+    </div>
+    <div id="monaco-result" style="min-height: 400px;border: 1px solid black"></div>
 
     <script type="module">
         import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/+esm';
         import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
-
-        function onEditorChange2(e, obj) {
-            console.log(e);
-            // const inputText = obj.monacoInput.getValue();
-            // console.log(inputText);
-        }
 
         createApp({
             data() {
                 return {
                     local: false,
                     csvOutputMode: false,
-                    csvInputMode: true,
+                    csvInputMode: false,
                     isResizing: false,
                     csvInputDelimiter: ',',
                     csvOutputDelimiter: ','
@@ -109,24 +114,26 @@
                         language: 'javascript',
                         theme: 'vs-dark'
                     };
+
+
                     document.monacoInput = monaco.editor.create(document.querySelector('#monaco-input'), {
                         ...conf,
-                        value: 
-// `[{
-//     "sample1": "test1",
-//     "sample2": "test2",
-//     "sample3": "test3"
-// },
-// {
-//     "sample1": "test4",
-//     "sample2": "test5",
-//     "sample3": "test6"
-// }]`
-`
-sample1,sample2,sample3
-test1,tesffffffffffft2,test3
-test4,test5,test6
-`
+                        value:
+                            `[{
+    "sample1": "test1",
+    "sample2": "test2",
+    "sample3": "test3"
+},
+{
+    "sample1": "test4",
+    "sample2": "test5",
+    "sample3": "test6"
+}]`
+                        //                             `
+                        // sample1,sample2,sample3
+                        // test1,tesffffffffffft2,test3
+                        // test4,test5,test6
+                        // `
                     });
                     document.monacoExpression = monaco.editor.create(document.querySelector('#monaco-expression'), {
                         ...conf,
