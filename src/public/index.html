@@ -68,9 +68,11 @@
                 Auto-Refresh
                 <input v-model="autoRefresh" type="checkbox" role="switch" />
             </label>
+            <label>
+                <button @click="compute">Process</button>
+            </label>
             <span v-show="processing" aria-busy="true"></span>
         </fieldset>
-    </div>
 
     <div id="cont">
         <div id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
@@ -78,6 +80,7 @@
         <div id="monaco-expression" style="min-height: 400px;border: 1px solid black"></div>
     </div>
     <div id="monaco-result" style="min-height: 400px;border: 1px solid black"></div>
+    </div>
 
     <script type="module">
         import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/+esm';
