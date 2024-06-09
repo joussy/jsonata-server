@@ -9,18 +9,6 @@ A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) tha
 - **Auto-refresh**: Automatically updates the data.
 - **Advanced UI Editor**: Powered by [Monaco Editor](https://github.com/microsoft/monaco-editor).
 
-## Dependencies
-
-### Node.js Server
-- [JSONata](https://github.com/jsonata-js/jsonata)
-- [CSV](https://github.com/adaltas/node-csv/)
-- [Express](https://github.com/expressjs/express)
-
-### HTML Client
-- [Vue.js](https://vuejs.org/)
-- [Bootstrap](https://getbootstrap.com/)
-- [Monaco Editor](https://github.com/microsoft/monaco-editor)
-
 ## Screenshot
 ![Preview](assets/screenshot.png)
 
@@ -50,11 +38,6 @@ Start the server:
    ```
 ### Accessing the Client
 Open your browser and navigate to http://localhost:3000
-### Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-### License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Docker
 ### Building the Docker Image
@@ -76,3 +59,21 @@ docker build -t jsonata-server .
 docker run -d -p 3000:3000 --name jsonata-server jsonata-server
 ```
 4. Open your browser and navigate to http://localhost:3000
+
+## Dependencies
+
+### Node.js Server
+- [JSONata](https://github.com/jsonata-js/jsonata)
+- [CSV](https://github.com/adaltas/node-csv/)
+- [Express](https://github.com/expressjs/express)
+
+### HTML Client
+- [Vue.js](https://vuejs.org/)
+- [Bootstrap](https://getbootstrap.com/)
+- [Monaco Editor](https://github.com/microsoft/monaco-editor)
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
