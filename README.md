@@ -38,7 +38,7 @@ will produce the following result
 ### Installation
 1. Clone the repository:
    ```sh
-   git clone https://github.com/joussy/jsonata-playground.git
+   git clone https://github.com/joussy/jsonata-server.git
    ```
 2. Navigate to the project directory:
    ```sh
@@ -61,7 +61,7 @@ Open your browser and navigate to http://localhost:3000
 ### Building the Docker Image
 Clone the repository:
 ```sh
-   git clone https://github.com/joussy/jsonata-playground.git
+   git clone https://github.com/joussy/jsonata-server.git
 ```
 1. Navigate to the project directory:
 ```sh

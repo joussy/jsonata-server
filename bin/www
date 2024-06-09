@@ -5,7 +5,7 @@
  */
 
 var app = require('../src/app');
-var debug = require('debug')('jsonata-playground:server');
+var debug = require('debug')('jsonata-server:server');
 var http = require('http');
 
 /**
