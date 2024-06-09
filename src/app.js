@@ -4,6 +4,8 @@ var logger = require('morgan');
 const bodyParser = require('body-parser');
 var indexRouter = require('./routes/index');
 
+console.info("Starting JSONata Web Server ...")
+
 var app = express();
 
 app.use(logger('dev'));
