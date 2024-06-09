@@ -9,7 +9,6 @@ router.get('/', function (req, res, next) {
 
 router.post('/jsonata', async (req, res, next) => {
   let jsonInput;
-  // await new Promise(resolve => setTimeout(resolve, 5000));
 
   if (req.body.csvInput) {
     // Parse CSV input
@@ -37,9 +36,8 @@ router.post('/jsonata', async (req, res, next) => {
     return res.status(400).send({ error: "JSON Input error", details: "Payload is empty" });
   }
 
-  try {
     // Get Bindings
-    const { expression, bindings, error} = getBindings(req.body.expression);
+    const { expression, bindings, error } = getBindings(req.body.expression);
 
     if (error) {
       return res.status(400).send({ error: "JSONata Binding error", details: error });
@@ -47,13 +45,19 @@ router.post('/jsonata', async (req, res, next) => {
     // Compile JSONata expression
     const compiledExpression = jsonata(expression);
 
+    let jsonResult;
     // Evaluate the expression
-    const jsonResult = await compiledExpression.evaluate(jsonInput, bindings);
+    try {
+      jsonResult = await compiledExpression.evaluate(jsonInput, bindings);
+    }
+    catch (error) {
+      return res.status(400).send({ error: "JSONata Expression error", details: error });
+    }
 
     if (req.body.csvOutput) {
       // Check if the result is an array
       if (!Array.isArray(jsonResult)) {
-        return res.status(400).send({ error: "CSV output error: Result is not an array" });
+        return res.status(400).send({ error: "CSV generation error", details: "The expression must return an array for CSV conversion" });
       }
 
       // Convert result to CSV
@@ -61,17 +65,12 @@ router.post('/jsonata', async (req, res, next) => {
         const csvOutput = stringify(jsonResult, { header: true, delimiter: req.body.csvOutputDelimiter });
         return res.send(csvOutput);
       } catch (err) {
-        return res.status(400).send({ error: `CSV output error: ${err.message}` });
+        return res.status(400).send({ error: "CSV generation error", details: err.message });
       }
     }
     else {
       return res.send(JSON.stringify(jsonResult, null, 2));
     }
-
-  } catch (error) {
-    console.error(error)
-    return res.status(400).send({ error: "Template error", details: error });
-  }
 });
 
 function getBindings(expression) {
@@ -80,19 +79,19 @@ function getBindings(expression) {
   let expressionString = parts[0]?.trim();
   let bindingString = parts[1]?.trim();
   let bindings;
-  let error;
+  let errorStr;
   if (bindingString?.length > 2) {
     try {
       bindings = new Function(`return (${bindingString})`)();
     }
     catch (error) {
-      error = error.message;
+      errorStr = error.message;
     }
   }
   return {
     expression: expressionString,
     bindings: bindings,
-    error
+    error: errorStr
   };
 }
 
