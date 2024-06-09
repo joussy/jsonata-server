@@ -12,11 +12,11 @@ A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) tha
 ## Screenshot
 ![Preview](assets/screenshot.png)
 
-## Bindings
+## Custom Bindings
 You can use [JSONata bindings](https://docs.jsonata.org/embedding-extending#expressionevaluateinput-bindings-callback) feature directly inside the JSONata expression window.
-To do so, add `//BINDINGS` at the end of your JSONata query, followed by your custom bindings.
+To do so, add `//BINDINGS` at the end of your JSONata expression, followed by your custom bindings.
 Example:
-```json
+```
 "hello there!" ~> $firstLetterUppercase
 //BINDINGS
 {
