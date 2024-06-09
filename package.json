@@ -5,6 +5,9 @@
   "scripts": {
     "start": "node ./bin/www"
   },
+  "bin": {
+    "jsonata-server": "./bin/www"
+  },
   "dependencies": {
     "csv": "^6.3.9",
     "debug": "~2.6.9",
