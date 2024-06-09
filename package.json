@@ -1,12 +1,11 @@
 {
-  "name": "jsonata-playground",
-  "version": "0.0.0",
-  "private": true,
+  "name": "jsonata-server",
+  "version": "1.0.0",
   "scripts": {
     "start": "node ./bin/www"
   },
   "bin": {
-    "jsonata-server": "./bin/www"
+    "jsonata-server": "bin/www"
   },
   "dependencies": {
     "csv": "^6.3.9",
@@ -14,5 +13,26 @@
     "express": "~4.19.2",
     "jsonata": "^2.0.5",
     "morgan": "~1.9.1"
-  }
+  },
+  "description": "A server-side processor for JSONata that supports JSON and CSV input/output",
+  "main": "bin/www",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joussy/jsonata-server.git"
+  },
+  "keywords": [
+    "JSONata",
+    "JSON",
+    "CSV",
+    "server-side",
+    "processing",
+    "monaco"
+  ],
+  "author": "joussy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joussy/jsonata-server/issues"
+  },
+  "homepage": "https://github.com/joussy/jsonata-server#readme"
 }
