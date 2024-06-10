@@ -1,6 +1,5 @@
 {
   "name": "jsonata-server",
-  "version": "1.0.1",
   "scripts": {
     "start": "node ./bin/www"
   },
