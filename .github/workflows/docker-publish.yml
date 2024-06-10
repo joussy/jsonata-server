@@ -6,15 +6,9 @@ name: Docker
 # documentation.
 
 on:
-  schedule:
-    - cron: '44 18 * * *'
-  push:
-    branches: [ "main" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "main" ]
-
+  release:
+    types: [created]
+  
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
