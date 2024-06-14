@@ -101,6 +101,31 @@ export default defineComponent({
                 this.updateDarkMode();
                 this.initialized = true;
             },
+            watch: {
+                outputFormat() {
+                    this.saveConfigurationToLocalStorage();
+                    this.onEditorChange();
+                },
+                inputFormat() {
+                    this.saveConfigurationToLocalStorage();
+                    this.onEditorChange();
+                },
+                csvInputDelimiter() {
+                    this.saveConfigurationToLocalStorage();
+                    this.onEditorChange();
+                },
+                csvOutputDelimiter() {
+                    this.saveConfigurationToLocalStorage();
+                    this.onEditorChange();
+                },
+                autoRefresh() {
+                    this.saveConfigurationToLocalStorage();
+                },
+                darkMode() {
+                    this.saveConfigurationToLocalStorage();
+                    this.updateDarkMode();
+                }
+            },
             methods: {
                 updateDarkMode() {
                     const mode = this.darkMode ? 'dark' : 'light';
