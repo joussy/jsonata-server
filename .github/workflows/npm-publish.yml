@@ -18,10 +18,21 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-      - run: npm ci
+      - name: Build frontend
+        run: |
+          cd client
+          npm run build
+      - name: Build backend
+        run: |
+          cd server
+          npm ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-artifact
+          path: client/dist
 
   publish-npm:
-    if: github.event_name == 'release'
+    # if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -30,8 +41,15 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-artifact
+          path: server/src/public
+      - run: |
+        cd server
+        npm ci
       - run: npm version --no-git-tag-version ${{ github.ref_name }}
-      - run: npm publish --allow-same-version
+      # - run: npm publish --allow-same-version
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
