@@ -3,3 +3,5 @@ node_modules
 *.log
 *.gz
 dist
+server/src/public
+server/src/public/index.html
