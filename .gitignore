@@ -4,4 +4,4 @@ node_modules
 *.gz
 dist
 server/src/public
-server/src/public/index.html
+
