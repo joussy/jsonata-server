@@ -69,7 +69,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, markRaw } from 'vue';
+import { defineComponent, markRaw, toRaw } from 'vue';
 import * as monaco from 'monaco-editor'
 
 export default defineComponent({
@@ -197,8 +197,8 @@ export default defineComponent({
                 return;
             }
             this.processing = true;
-            const inputText = this.monacoInput.getValue();
-            const expressionText = this.monacoExpression.getValue();
+            const inputText = toRaw(this.monacoInput).getValue();
+            const expressionText = toRaw(this.monacoExpression).getValue();
             try {
                 localStorage.setItem("inputText", inputText);
             }
@@ -224,16 +224,16 @@ export default defineComponent({
                 });
                 let data = await response.text();
                 if (response.status == 200) {
-                    this.monacoResult.setValue(data);
+                    toRaw(this.monacoResult).setValue(data);
                 }
                 else {
                     let error = JSON.parse(data);
                     let errorText = `${error.error}\nDetails: ${JSON.stringify(error.details, null, 2)}`.replace('\n', "\n");
-                    this.monacoResult.setValue(errorText);
+                    toRaw(this.monacoResult).setValue(errorText);
                 }
 
             } catch (error: any) {
-                this.monacoResult.setValue(`Error:\n${JSON.stringify(error?.message)}`);
+                toRaw(this.monacoResult).setValue(`Error:\n${JSON.stringify(error?.message)}`);
             }
             this.processing = false;
         },
