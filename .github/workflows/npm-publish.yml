@@ -21,6 +21,7 @@ jobs:
       - name: Build frontend
         run: |
           cd client
+          npm ci
           npm run build
       - name: Build backend
         run: |
@@ -46,10 +47,15 @@ jobs:
         with:
           name: frontend-artifact
           path: server/src/public
+      - name: Build backend
+        run: |
+          cd server
+          npm ci
       - run: |
-        cd server
-        npm ci
-      - run: npm version --no-git-tag-version ${{ github.ref_name }}
-      # - run: npm publish --allow-same-version
+          cd server
+          npm version --no-git-tag-version ${{ github.ref_name }}
+      # - run: |
+      #     cd server
+      #     npm publish --allow-same-version
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
