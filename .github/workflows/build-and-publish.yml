@@ -33,7 +33,9 @@ jobs:
         run: |
           cd server
           npm ci
-      - uses: actions/upload-artifact@v4
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        if: github.event_name == 'release'
         with:
           name: frontend-artifact
           path: client/dist
@@ -57,7 +59,8 @@ jobs:
         run: |
           cd server
           npm ci
-      - run: |
+      - name: NPM publish
+        run: |
           cd server
           npm version --no-git-tag-version ${{ github.ref_name }}
           npm publish --allow-same-version
