@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: Build frontend
@@ -39,12 +39,12 @@ jobs:
           path: client/dist
 
   publish-npm:
-    # if: github.event_name == 'release'
+    if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
@@ -57,14 +57,15 @@ jobs:
         run: |
           cd server
           npm ci
-      # - run: |
-      #     cd server
-      #     npm version --no-git-tag-version ${{ github.ref_name }}
-      #     npm publish --allow-same-version
+      - run: |
+          cd server
+          npm version --no-git-tag-version ${{ github.ref_name }}
+          npm publish --allow-same-version
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
           
   publish-docker:
+    if: github.event_name == 'release'
     needs: publish-npm
     runs-on: ubuntu-latest
     permissions:
@@ -123,8 +124,7 @@ jobs:
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
           context: server
-          # push: ${{ github.event_name != 'pull_request' }}
-          push: ${{ false }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
