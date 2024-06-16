@@ -1,0 +1,27 @@
+body,
+html {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#monaco-input,
+#monaco-expression {
+    flex: 1;
+}
+
+#cont {
+    display: flex;
+    width: 100%;
+}
+
+#divider {
+    width: 5px;
+    background-color: #ccc;
+    cursor: ew-resize;
+    position: relative;
+}
+
+.jsonata-logo {
+    height: 40px;
+}

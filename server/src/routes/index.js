@@ -7,7 +7,7 @@ router.get('/', function (req, res, next) {
   res.render('index');
 });
 
-router.post('/jsonata', async (req, res, next) => {
+router.post('/api/jsonata', async (req, res, next) => {
   let jsonInput;
 
   if (req.body.csvInput) {
@@ -42,8 +42,16 @@ router.post('/jsonata', async (req, res, next) => {
     if (error) {
       return res.status(400).send({ error: "JSONata Binding error", details: error });
     }
-    // Compile JSONata expression
-    const compiledExpression = jsonata(expression);
+
+    let compiledExpression = null;
+
+    try {
+      // Compile JSONata expression
+      compiledExpression = jsonata(expression);
+    }
+    catch (error) {
+      return res.status(400).send({ error: "JSONata Expression error", details: error.message });
+    }
 
     let jsonResult;
     // Evaluate the expression

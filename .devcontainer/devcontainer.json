@@ -11,7 +11,9 @@
 		"vscode": {
 			"settings": {},
 			"extensions": [
-			]
+				"Vue.volar",
+				"ms-edgedevtools.vscode-edge-devtools"
+			  ]
 		}
 	},
 
