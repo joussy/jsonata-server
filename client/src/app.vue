@@ -61,18 +61,43 @@
             </div>
         </div>
     </div>
-    <div id="cont">
-        <div ref="monacoInput" id="monaco-input" style="min-height: 400px;border: 1px solid black"></div>
-        <div ref="monacoExpression" id="monaco-expression" style="min-height: 400px;border: 1px solid black"></div>
-    </div>
-    <div ref="monacoResult" id="monaco-result" style="min-height: 400px;border: 1px solid black"></div>
+    <splitpanes horizontal @resized="resized" @resize="paneHorizontalSize = $event[0].size" :dbl-click-splitter="false">
+        <pane :size="paneHorizontalSize">
+            <splitpanes @resized="resized" @resize="paneVerticalSize = $event[0].size" :dbl-click-splitter="false">
+                <pane :size="paneVerticalSize">
+                    <div 
+                    class="monaco-editor" 
+                    ref="monacoInput" 
+                    id="monaco-input"
+                    ></div>
+                </pane>
+                <pane>
+                    <div 
+                    class="monaco-editor" 
+                    ref="monacoExpression" 
+                    id="monaco-expression"
+                    ></div>
+                </pane>
+            </splitpanes>
+        </pane>
+        <pane>
+            <div 
+            class="monaco-editor" 
+            ref="monacoResult" 
+            id="monaco-result"
+            ></div>
+        </pane>
+    </splitpanes>
 </template>
 
 <script lang="ts">
 import { defineComponent, markRaw, toRaw } from 'vue';
 import * as monaco from 'monaco-editor'
+import { Splitpanes, Pane } from 'splitpanes';
+import 'splitpanes/dist/splitpanes.css'
 
 export default defineComponent({
+    components: { Splitpanes, Pane },
     data() {
         return {
             outputFormat: "json",
@@ -84,6 +109,8 @@ export default defineComponent({
             initialized: false,
             processing: false,
             darkMode: false,
+            paneVerticalSize: 50,
+            paneHorizontalSize: 50,
             timer: null as number | null,
             monacoInput: null as monaco.editor.IStandaloneCodeEditor | null,
             monacoExpression: null as monaco.editor.IStandaloneCodeEditor | null,
@@ -100,6 +127,8 @@ export default defineComponent({
             this.csvInputDelimiter = configLocalStorage.csvInputDelimiter;
             this.csvOutputDelimiter = configLocalStorage.csvOutputDelimiter;
             this.darkMode = configLocalStorage.darkMode;
+            this.paneHorizontalSize = configLocalStorage.paneHorizontalSize;
+            this.paneVerticalSize = configLocalStorage.paneVerticalSize;
         }
         this.initializeEditors();
         this.updateDarkMode();
@@ -131,6 +160,10 @@ export default defineComponent({
         }
     },
     methods: {
+        resized() {
+            console.log([this.paneVerticalSize, this.paneHorizontalSize])
+            this.saveConfigurationToLocalStorage();
+        },
         updateDarkMode() {
             const mode = this.darkMode ? 'dark' : 'light';
             document.querySelector('html')?.setAttribute('data-bs-theme', mode)
@@ -143,13 +176,16 @@ export default defineComponent({
                 autoRefresh: this.autoRefresh,
                 csvInputDelimiter: this.csvInputDelimiter,
                 csvOutputDelimiter: this.csvOutputDelimiter,
-                darkMode: this.darkMode
+                darkMode: this.darkMode,
+                paneVerticalSize: this.paneVerticalSize,
+                paneHorizontalSize: this.paneHorizontalSize
             })
             localStorage.setItem("config", configAsString);
         },
         initializeEditors() {
-            const conf = {
-                theme: document.querySelector('html[data-bs-theme="dark"]') ? 'vs-dark' : 'vs-light'
+            const conf : monaco.editor.IStandaloneEditorConstructionOptions = {
+                theme: document.querySelector('html[data-bs-theme="dark"]') ? 'vs-dark' : 'vs-light',
+                automaticLayout: true
             };
 
 
@@ -231,7 +267,6 @@ export default defineComponent({
                     let errorText = `${error.error}\nDetails: ${JSON.stringify(error.details, null, 2)}`.replace('\n', "\n");
                     toRaw(this.monacoResult).setValue(errorText);
                 }
-
             } catch (error: any) {
                 toRaw(this.monacoResult).setValue(`Error:\n${JSON.stringify(error?.message)}`);
             }
@@ -242,5 +277,21 @@ export default defineComponent({
 </script>
 
 <style>
-/* Add your component-specific styles here */
+
+.splitpanes {background-color: #f8f8f8;}
+
+.splitpanes__splitter {background-color: #ccc;position: relative;}
+.splitpanes__splitter:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: opacity 0.4s;
+  background-color: #0d6efd;
+  opacity: 0;
+  z-index: 3000;
+}
+.splitpanes__splitter:hover:before {opacity: 1;}
+.splitpanes--vertical > .splitpanes__splitter:before {left: -5px;right: -5px;height: 100%;}
+.splitpanes--horizontal > .splitpanes__splitter:before {top: -5px;bottom: -5px;width: 100%;}
 </style>
