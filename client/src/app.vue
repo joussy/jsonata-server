@@ -61,31 +61,23 @@
             </div>
         </div>
     </div>
-    <splitpanes horizontal @resized="resized" @resize="paneHorizontalSize = $event[0].size; paneOutputEditorSize = $event[1].size" :dbl-click-splitter="false">
+    <splitpanes horizontal @resized="resized"
+        @resize="paneHorizontalSize = $event[0].size; paneOutputEditorSize = $event[1].size"
+        :dbl-click-splitter="false">
         <pane :size="paneHorizontalSize">
-            <splitpanes @resized="resized" @resize="paneInputEditorSize = $event[0].size; paneExpressionEditorSize = $event[1].size" :dbl-click-splitter="false">
+            <splitpanes @resized="resized"
+                @resize="paneInputEditorSize = $event[0].size; paneExpressionEditorSize = $event[1].size"
+                :dbl-click-splitter="false">
                 <pane :size="paneInputEditorSize">
-                    <div 
-                    class="monaco-editor" 
-                    ref="monacoInput" 
-                    id="monaco-input"
-                    ></div>
+                    <div class="monaco-editor" ref="monacoInput" id="monaco-input"></div>
                 </pane>
                 <pane :size="paneExpressionEditorSize">
-                    <div 
-                    class="monaco-editor" 
-                    ref="monacoExpression" 
-                    id="monaco-expression"
-                    ></div>
+                    <div class="monaco-editor" ref="monacoExpression" id="monaco-expression"></div>
                 </pane>
             </splitpanes>
         </pane>
         <pane :size="paneOutputEditorSize">
-            <div 
-            class="monaco-editor" 
-            ref="monacoResult" 
-            id="monaco-result"
-            ></div>
+            <div class="monaco-editor" ref="monacoResult" id="monaco-result"></div>
         </pane>
     </splitpanes>
 </template>
@@ -93,6 +85,7 @@
 <script lang="ts">
 import { defineComponent, markRaw, toRaw } from 'vue';
 import * as monaco from 'monaco-editor'
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css'
 
@@ -171,7 +164,7 @@ export default defineComponent({
         updateDarkMode() {
             const mode = this.darkMode ? 'dark' : 'light';
             document.querySelector('html')?.setAttribute('data-bs-theme', mode)
-            monaco.editor.setTheme(`vs-${mode}`);
+            monaco.editor.setTheme(`jsonataTheme-${mode}`);
         },
         saveConfigurationToLocalStorage() {
             let configAsString = JSON.stringify({
@@ -189,13 +182,20 @@ export default defineComponent({
             localStorage.setItem("config", configAsString);
         },
         initializeEditors() {
-            const conf : monaco.editor.IStandaloneEditorConstructionOptions = {
-                theme: document.querySelector('html[data-bs-theme="dark"]') ? 'vs-dark' : 'vs-light',
+            this.registerJsonata();
+            window.MonacoEnvironment = {
+                getWorker: function (workerId: string, label: string): Promise<Worker> | Worker {
+                    return new jsonWorker();
+                }
+            }
+
+            const conf: monaco.editor.IStandaloneEditorConstructionOptions = {
                 automaticLayout: true
             };
 
             this.monacoInput = markRaw(monaco.editor.create(this.$refs.monacoInput as HTMLElement, {
                 ...conf,
+                language: 'json',
                 value: localStorage.getItem('inputText') ??
                     `[{
     "sample1": "test1",
@@ -210,10 +210,13 @@ export default defineComponent({
             }));
             this.monacoExpression = monaco.editor.create(this.$refs.monacoExpression as HTMLElement, {
                 ...conf,
+                language: 'jsonata',
+                theme: 'jsonataTheme',
                 value: localStorage.getItem('expressionText') ?? `$`
             });
             this.monacoResult = markRaw(monaco.editor.create(this.$refs.monacoResult as HTMLElement, {
                 ...conf,
+                language: 'json',
                 value: "",
                 readOnly: true
             }));
@@ -277,26 +280,109 @@ export default defineComponent({
             }
             this.processing = false;
         },
+        registerJsonata() {
+            // Register a new language
+            monaco.languages.register({ id: 'jsonata' });
+
+            // Register a tokens provider for the language
+            monaco.languages.setMonarchTokensProvider('jsonata', {
+                tokenizer: {
+                    root: [
+                        [/\/\*.*\*\//, "jsonata-comment"],
+                        [/'.*?'/, "jsonata-string"],
+                        [/".*?"/, "jsonata-string"],
+                        [/\$[a-zA-Z0-9_]*/, "jsonata-variable"],
+                        [/[a-zA-Z0-9_]+/, "jsonata-names"],
+                    ]
+                }
+            });
+
+            const brackets = [
+                { open: '(', close: ')' },
+                { open: '[', close: ']' },
+                { open: '{', close: '}' },
+                { open: '"', close: '"' },
+                { open: '\'', close: '\'' },
+                { open: '`', close: '`' },
+            ];
+            monaco.languages.setLanguageConfiguration('jsonata', {
+                brackets: [['(', ')'], ['[', ']'], ['{', '}']],
+                autoClosingPairs: brackets,
+                surroundingPairs: brackets,
+                indentationRules: {
+                    // ^(.*\*/)?\s*\}.*$
+                    decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[}\])].*$/,
+                    // ^.*\{[^}"']*$
+                    increaseIndentPattern: /^((?!\/\/).)*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/
+                }
+            });
+
+            // Define a new theme that contains only rules that match this language
+            monaco.editor.defineTheme('jsonataTheme-light', {
+                base: 'vs',
+                inherit: true,
+                rules: [
+                    { token: 'jsonata-string', foreground: 'a00000' },
+                    { token: 'jsonata-comment', foreground: '008000' },
+                    { token: 'jsonata-variable', foreground: 'ff4000' },
+                    { token: 'jsonata-names', foreground: '0000c0' },
+                ],
+                colors: {
+                    // "editor.background": '#fffffb'
+                }
+            });
+            monaco.editor.defineTheme('jsonataTheme-dark', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'jsonata-string', foreground: 'ce9178' },
+                    { token: 'jsonata-comment', foreground: '008000' },
+                    { token: 'jsonata-variable', foreground: 'ff4000' },
+                    { token: 'jsonata-names', foreground: '00A4F3' },
+                ],
+                colors: {
+                    // "editor.background": '#fffffb'
+                }
+            });
+        }
     }
 });
 </script>
 
 <style>
-
-.splitpanes {background-color: #f8f8f8;}
-
-.splitpanes__splitter {background-color: #ccc;position: relative;}
-.splitpanes__splitter:before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  transition: opacity 0.4s;
-  background-color: #0d6efd;
-  opacity: 0;
-  z-index: 3000;
+.splitpanes {
+    background-color: #f8f8f8;
 }
-.splitpanes__splitter:hover:before {opacity: 1;}
-.splitpanes--vertical > .splitpanes__splitter:before {left: -5px;right: -5px;height: 100%;}
-.splitpanes--horizontal > .splitpanes__splitter:before {top: -5px;bottom: -5px;width: 100%;}
+
+.splitpanes__splitter {
+    background-color: #ccc;
+    position: relative;
+}
+
+.splitpanes__splitter:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: opacity 0.4s;
+    background-color: #0d6efd;
+    opacity: 0;
+    z-index: 3000;
+}
+
+.splitpanes__splitter:hover:before {
+    opacity: 1;
+}
+
+.splitpanes--vertical>.splitpanes__splitter:before {
+    left: -5px;
+    right: -5px;
+    height: 100%;
+}
+
+.splitpanes--horizontal>.splitpanes__splitter:before {
+    top: -5px;
+    bottom: -5px;
+    width: 100%;
+}
 </style>
