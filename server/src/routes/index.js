@@ -37,7 +37,7 @@ router.post('/api/jsonata', async (req, res, next) => {
   }
 
     // Get Bindings
-    const { expression, bindings, error } = getBindings(req.body.expression);
+    let { expression, bindings, error } = getBindings(req.body.expression);
 
     if (error) {
       return res.status(400).send({ error: "JSONata Binding error", details: error });
@@ -46,6 +46,7 @@ router.post('/api/jsonata', async (req, res, next) => {
     let compiledExpression = null;
 
     try {
+      if (!expression) expression = "$"
       // Compile JSONata expression
       compiledExpression = jsonata(expression);
     }
