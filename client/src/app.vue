@@ -61,17 +61,17 @@
             </div>
         </div>
     </div>
-    <splitpanes horizontal @resized="resized" @resize="paneHorizontalSize = $event[0].size" :dbl-click-splitter="false">
+    <splitpanes horizontal @resized="resized" @resize="paneHorizontalSize = $event[0].size; paneOutputEditorSize = $event[1].size" :dbl-click-splitter="false">
         <pane :size="paneHorizontalSize">
-            <splitpanes @resized="resized" @resize="paneVerticalSize = $event[0].size" :dbl-click-splitter="false">
-                <pane :size="paneVerticalSize">
+            <splitpanes @resized="resized" @resize="paneInputEditorSize = $event[0].size; paneExpressionEditorSize = $event[1].size" :dbl-click-splitter="false">
+                <pane :size="paneInputEditorSize">
                     <div 
                     class="monaco-editor" 
                     ref="monacoInput" 
                     id="monaco-input"
                     ></div>
                 </pane>
-                <pane>
+                <pane :size="paneExpressionEditorSize">
                     <div 
                     class="monaco-editor" 
                     ref="monacoExpression" 
@@ -80,7 +80,7 @@
                 </pane>
             </splitpanes>
         </pane>
-        <pane>
+        <pane :size="paneOutputEditorSize">
             <div 
             class="monaco-editor" 
             ref="monacoResult" 
@@ -109,8 +109,10 @@ export default defineComponent({
             initialized: false,
             processing: false,
             darkMode: false,
-            paneVerticalSize: 50,
-            paneHorizontalSize: 50,
+            paneInputEditorSize: null,
+            paneExpressionEditorSize: null,
+            paneHorizontalSize: null,
+            paneOutputEditorSize: null,
             timer: null as number | null,
             monacoInput: null as monaco.editor.IStandaloneCodeEditor | null,
             monacoExpression: null as monaco.editor.IStandaloneCodeEditor | null,
@@ -128,7 +130,9 @@ export default defineComponent({
             this.csvOutputDelimiter = configLocalStorage.csvOutputDelimiter;
             this.darkMode = configLocalStorage.darkMode;
             this.paneHorizontalSize = configLocalStorage.paneHorizontalSize;
-            this.paneVerticalSize = configLocalStorage.paneVerticalSize;
+            this.paneInputEditorSize = configLocalStorage.paneVerticalSize;
+            this.paneExpressionEditorSize = configLocalStorage.paneExpressionEditorSize;
+            this.paneOutputEditorSize = configLocalStorage.paneOutputEditorSize;
         }
         this.initializeEditors();
         this.updateDarkMode();
@@ -161,7 +165,7 @@ export default defineComponent({
     },
     methods: {
         resized() {
-            console.log([this.paneVerticalSize, this.paneHorizontalSize])
+            console.log([this.paneInputEditorSize, this.paneExpressionEditorSize])
             this.saveConfigurationToLocalStorage();
         },
         updateDarkMode() {
@@ -177,8 +181,10 @@ export default defineComponent({
                 csvInputDelimiter: this.csvInputDelimiter,
                 csvOutputDelimiter: this.csvOutputDelimiter,
                 darkMode: this.darkMode,
-                paneVerticalSize: this.paneVerticalSize,
-                paneHorizontalSize: this.paneHorizontalSize
+                paneVerticalSize: this.paneInputEditorSize,
+                paneExpressionEditorSize: this.paneExpressionEditorSize,
+                paneHorizontalSize: this.paneHorizontalSize,
+                paneOutputEditorSize: this.paneOutputEditorSize
             })
             localStorage.setItem("config", configAsString);
         },
@@ -187,7 +193,6 @@ export default defineComponent({
                 theme: document.querySelector('html[data-bs-theme="dark"]') ? 'vs-dark' : 'vs-light',
                 automaticLayout: true
             };
-
 
             this.monacoInput = markRaw(monaco.editor.create(this.$refs.monacoInput as HTMLElement, {
                 ...conf,
