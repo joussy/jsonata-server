@@ -1,5 +1,5 @@
 <template>
-    <div class="card mb-1">
+    <div class="card mb-1" :class="{ 'bg-light': isLight }">
         <div class="card-body row d-flex align-items-center">
             <div class="col-auto">
                 <label>
@@ -38,26 +38,37 @@
                 </label>
             </div>
             <div class="col-auto">
+                <label>
+                    Color Theme
+                    <select class="form-select" v-model="colorTheme">
+                        <option :value="ColorTheme.Auto">Auto</option>
+                        <option :value="ColorTheme.Light">Light</option>
+                        <option :value="ColorTheme.Dark">Dark</option>
+                    </select>
+                </label>
+            </div>
+            <div class="col-auto">
                 <div class="form-check form-switch">
                     <input v-model="autoRefresh" class="form-check-input" type="checkbox" role="switch"
                         id="autorefresh">
                     <label class="form-check-label" for="autorefresh">Auto-Refresh</label>
                 </div>
-                <div class="form-check form-switch col-auto">
-                    <input v-model="darkMode" class="form-check-input" type="checkbox" role="switch" id="darkmode">
-                    <label class="form-check-label" for="darkmode">Dark Mode</label>
-                </div>
-            </div>
-            <div class="col-auto">
                 <button v-show="!processing" type="button" class="btn border border-primary" @click="compute">
                     Convert <i class="bi bi-play"></i>
                 </button>
                 <span v-show="processing" class="spinner-border text-primary" role="status"></span>
             </div>
             <div class="col-auto ms-auto">
-                <a class="btn border" href="https://docs.jsonata.org/simple" target="_blank">
-                    <i class="p-2 bi bi-box-arrow-up-right"></i><span>Jsonata Docs</span>
-                </a>
+                <div>
+                    <a class="btn border" href="https://github.com/joussy/jsonata-server" target="_blank">
+                        <i class="p-2 bi bi-github"></i><span>Project Page</span>
+                    </a>
+                </div>
+                <div>
+                    <a class="btn border" href="https://docs.jsonata.org/simple" target="_blank">
+                        <i class="p-2 bi bi-box-arrow-up-right"></i><span>Jsonata Docs</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -89,6 +100,12 @@ import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css'
 
+enum ColorTheme {
+    Auto = "auto",
+    Light = "light",
+    Dark = "dark"
+}
+
 export default defineComponent({
     components: { Splitpanes, Pane },
     data() {
@@ -101,7 +118,8 @@ export default defineComponent({
             csvOutputDelimiter: ',',
             initialized: false,
             processing: false,
-            darkMode: false,
+            colorTheme: ColorTheme.Auto,
+            ColorTheme: ColorTheme,
             paneInputEditorSize: null,
             paneExpressionEditorSize: null,
             paneHorizontalSize: null,
@@ -109,7 +127,8 @@ export default defineComponent({
             timer: null as number | null,
             monacoInput: null as monaco.editor.IStandaloneCodeEditor | null,
             monacoExpression: null as monaco.editor.IStandaloneCodeEditor | null,
-            monacoResult: null as monaco.editor.IStandaloneCodeEditor | null
+            monacoResult: null as monaco.editor.IStandaloneCodeEditor | null,
+            isLight: true
         }
     },
     mounted() {
@@ -121,14 +140,15 @@ export default defineComponent({
             this.inputFormat = configLocalStorage.inputFormat;
             this.csvInputDelimiter = configLocalStorage.csvInputDelimiter;
             this.csvOutputDelimiter = configLocalStorage.csvOutputDelimiter;
-            this.darkMode = configLocalStorage.darkMode;
+            this.colorTheme = configLocalStorage.colorTheme;
             this.paneHorizontalSize = configLocalStorage.paneHorizontalSize;
             this.paneInputEditorSize = configLocalStorage.paneVerticalSize;
             this.paneExpressionEditorSize = configLocalStorage.paneExpressionEditorSize;
             this.paneOutputEditorSize = configLocalStorage.paneOutputEditorSize;
         }
         this.initializeEditors();
-        this.updateDarkMode();
+        this.updateColorTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', this.updateColorTheme.bind(this));
         this.initialized = true;
     },
     watch: {
@@ -151,9 +171,9 @@ export default defineComponent({
         autoRefresh() {
             this.saveConfigurationToLocalStorage();
         },
-        darkMode() {
+        colorTheme() {
             this.saveConfigurationToLocalStorage();
-            this.updateDarkMode();
+            this.updateColorTheme();
         }
     },
     methods: {
@@ -161,8 +181,17 @@ export default defineComponent({
             console.log([this.paneInputEditorSize, this.paneExpressionEditorSize])
             this.saveConfigurationToLocalStorage();
         },
-        updateDarkMode() {
-            const mode = this.darkMode ? 'dark' : 'light';
+        updateColorTheme() {
+            if (this.colorTheme == ColorTheme.Dark) {
+                this.isLight = false;
+            }
+            else if (this.colorTheme == ColorTheme.Auto && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                this.isLight = false;
+            }
+            else {
+                this.isLight = true;
+            }
+            const mode = this.isLight ? 'light' : 'dark';
             document.querySelector('html')?.setAttribute('data-bs-theme', mode)
             monaco.editor.setTheme(`jsonataTheme-${mode}`);
         },
@@ -173,7 +202,7 @@ export default defineComponent({
                 autoRefresh: this.autoRefresh,
                 csvInputDelimiter: this.csvInputDelimiter,
                 csvOutputDelimiter: this.csvOutputDelimiter,
-                darkMode: this.darkMode,
+                colorTheme: this.colorTheme,
                 paneVerticalSize: this.paneInputEditorSize,
                 paneExpressionEditorSize: this.paneExpressionEditorSize,
                 paneHorizontalSize: this.paneHorizontalSize,
@@ -350,6 +379,7 @@ export default defineComponent({
 </script>
 
 <style>
+
 .splitpanes {
     background-color: #f8f8f8;
 }
