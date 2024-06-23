@@ -31,10 +31,29 @@ will produce the following result
 ```
 
 ## Getting Started
+### With NPM
+> [!NOTE]
+> NodeJS >=18.3 must be installed on your machine
+1. Install NPM CLI package globally:
+   ```sh
+   npm install -g jsonata-server
+   ```
+2. Start the server:
+   ```sh
+   PORT=3000 jsonata-server
+   ```
+### With Docker
+> [!NOTE]
+> You must be authenticated on the [Github Container Registery](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic)
+   ```
+docker run -d -p 3000:3000 ghcr.io/joussy/jsonata-server
+   ```
 
-### Prerequisites
-- Node.js installed on your machine.
+### Accessing the Client
+Open your browser and navigate to http://localhost:3000
 
+
+## Build from sources
 ### Installation
 1. Clone the repository:
    ```sh
@@ -48,35 +67,17 @@ will produce the following result
    ```sh
    npm install
    ```
-
-### Running the Server
-Start the server:
-   ```sh
-   npm run start
-   ```
-### Accessing the Client
-Open your browser and navigate to http://localhost:3000
-
-## Docker
 ### Building the Docker Image
-Clone the repository:
-```sh
-   git clone https://github.com/joussy/jsonata-server.git
-```
-1. Navigate to the project directory:
-```sh
-cd jsonata-server
-```
-2. Build the Docker image:
+1. Build the Docker image:
 ```sh
 docker build -t jsonata-server .
 ```
 ### Running the Docker Container
-3. Run the Docker container:
+2. Run the Docker container:
 ```sh
 docker run -d -p 3000:3000 --name jsonata-server jsonata-server
 ```
-4. Open your browser and navigate to http://localhost:3000
+3. Open your browser and navigate to http://localhost:3000
 
 ## Dependencies
 
