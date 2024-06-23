@@ -4,6 +4,7 @@ A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) tha
 ## Features
 - **Unlimited Processing Time**: Server-side processing removes browser limitations.
 - **Flexible Input/Output**: Supports both JSON and CSV formats.
+- **Choose your CSV Delimiter**: comma, semi-column and tab are supported
 - **Data Persistence**: Saves data to local storage to prevent data loss.
 - **Dark/Light Mode**: Choose your preferred theme.
 - **Auto-refresh**: Automatically updates the data.

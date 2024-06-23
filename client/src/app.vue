@@ -16,6 +16,7 @@
                     <select class="form-select" v-model="csvInputDelimiter" :disabled="!inputFormat">
                         <option value=";">;</option>
                         <option value=",">,</option>
+                        <option value="&#9;">\t</option>
                     </select>
                 </label>
             </div>
@@ -34,6 +35,7 @@
                     <select class="form-select" v-model="csvOutputDelimiter" :disabled="!outputFormat">
                         <option value=";">;</option>
                         <option value=",">,</option>
+                        <option value="&#9;">\t</option>
                     </select>
                 </label>
             </div>

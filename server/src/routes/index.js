@@ -9,7 +9,6 @@ router.get('/', function (req, res, next) {
 
 router.post('/api/jsonata', async (req, res, next) => {
   let jsonInput;
-
   if (req.body.csvInput) {
     // Parse CSV input
     try {
