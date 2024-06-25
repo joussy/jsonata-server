@@ -1,19 +1,11 @@
 import * as monaco from 'monaco-editor'
+import jsonataLocaleEnUs from './jsonata.locales.en-US';
 
-//Helper function to simplify snippet setup
-function createMonacoCompletionItem(label: string, insertText: string, documentation: string | object, range: object, kind: number) {
-    if (Array.isArray(documentation)) { documentation = documentation .join("\n"); }
-    return {
-        label: label,
-        kind: kind == null ? monaco.languages.CompletionItemKind.Snippet : kind,
-        documentation: { value: documentation },
-        insertText: insertText,
-        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range
-    }
-}
+/* Copied from Node-Red project:
+https://github.com/node-red/node-red/blob/9d054543a765451a41b5959c1e5dba617097a93c/packages/node_modules/%40node-red/editor-client/src/js/ui/editors/code-editors/monaco.js
+ */
 
-function setupJSONata(_monaco: monaco.editor.IStandaloneEditorConstructionOptions) {
+function setupJSONata() {
     // Register the language 'jsonata'
     monaco.languages.register({ id: 'jsonata' });
 
@@ -23,28 +15,12 @@ function setupJSONata(_monaco: monaco.editor.IStandaloneEditorConstructionOption
             // Set defaultToken to invalid to see what you do not tokenize yet
             defaultToken: 'invalid',
             tokenPostfix: '.js',
-            keywords: ["function", "true", "true", "null", "Infinity", "NaN", "undefined"].concat(Object.keys(jsonata.functions)),
-            // keywords: [
-            //     "function", "$abs", "$append", "$assert", "$average",
-            //     "$base64decode", "$base64encode", "$boolean", "$ceil", "$contains",
-            //     "$count", "$decodeUrl", "$decodeUrlComponent", "$distinct", "$each", "$encodeUrl",
-            //     "$encodeUrlComponent", "$env", "$error", "$eval", "$exists", "$filter", "$floor",
-            //     "$flowContext", "$formatBase", "$formatInteger", "$formatNumber", "$fromMillis",
-            //     "$globalContext", "$join", "$keys", "$length", "$lookup", "$lowercase", "$map",
-            //     "$match", "$max", "$merge", "$millis", "$min", "$moment", "$not", "$now",
-            //     "$number", "$pad", "$parseInteger", "$power", "$random", "$reduce", "$replace",
-            //     "$reverse", "$round", "$shuffle", "$sift", "$single", "$sort", "$split",
-            //     "$spread", "$sqrt", "$string", "$substring", "$substringAfter", "$substringBefore",
-            //     "$sum", "$toMillis", "$trim", "$type", "$uppercase", "$zip"
-            // ],
-
+            keywords: ["function", "true", "true", "null", "Infinity", "NaN", "undefined"].concat(Object.keys(Object.keys(jsonataLocaleEnUs))),
             operatorsKeywords: ['and', 'or', 'in'],
-
             operators: [
                 '<=', '>=', '!=', '==', '!=', '=>', '+', '-', '*', '/', '%',
                 ':=', '~>', '?', ':', '..', '@', '#', '|', '^', '*', '**',
             ],
-
             // we include these common regular expressions
             symbols: /[=><!~?:&|+\-*\/\^%@#]+/,
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
@@ -234,23 +210,21 @@ function setupJSONata(_monaco: monaco.editor.IStandaloneEditorConstructionOption
                 startColumn: startColumn,
                 endColumn: _word.endColumn
             };
-            var jsonataFunctions = Object.keys(jsonata.functions);
-            var jsonataSuggestions = jsonataFunctions.map(function (f) {
-                var args = RED._('jsonata:' + f + '.args', { defaultValue: '' });
-                var title = f + '(' + args + ')';
-                var body = RED._('jsonata:' + f + '.desc', { defaultValue: '' });
-                var insertText = (jsonata.getFunctionSnippet(f) + '').trim();
-                var documentation = { value: '`' + title + '`\n\n' + body };
-                return createMonacoCompletionItem(f, insertText, documentation, range, monaco.languages.CompletionItemKind.Function);
+            let jsonataSuggestions = Object.keys(jsonataLocaleEnUs).map((functionName: string) => {
+                const args = jsonataLocaleEnUs[functionName].args;
+                const desc = jsonataLocaleEnUs[functionName].desc;
+                const title = `${functionName}(${args})`;
+                const insertText = `\\${functionName}(${args.replaceAll("[", "").replaceAll("]", "")})`;
+                const documentation = { value: '`' + title + '`\n\n' + desc };
+                return {
+                    label: functionName,
+                    kind: monaco.languages.CompletionItemKind.Function,
+                    documentation: documentation,
+                    insertText: insertText,
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    range: range
+                }
             });
-            // sort in length order (long->short) otherwise substringAfter gets matched as substring etc.
-            jsonataFunctions.sort(function (A, B) {
-                return B.length - A.length;
-            });
-            // add snippets to suggestions
-            jsonataSuggestions.unshift(
-                createMonacoCompletionItem("randominteger", '(\n\t\\$minimum := ${1:1};\n\t\\$maximum := ${2:10};\n\t\\$round((\\$random() * (\\$maximum-\\$minimum)) + \\$minimum, 0)\n)', 'Random integer between 2 numbers', range, null)
-            );//TODO: add more JSONata snippets
             return { suggestions: jsonataSuggestions };
         }
     });
@@ -266,10 +240,11 @@ function setupJSONata(_monaco: monaco.editor.IStandaloneEditorConstructionOption
             } else {
                 return;
             }
-            var args = RED._('jsonata:' + f + ".args", { defaultValue: '' });
+            if (!jsonataLocaleEnUs[f]) { return; }
+            let args = jsonataLocaleEnUs[f].args;
+            let desc = jsonataLocaleEnUs[f].desc;
             if (!args) { return; }
             var title = f + "(" + args + ")";
-            var body = RED._('jsonata:' + f + '.desc', { defaultValue: '' });
 
             /** @type {monaco.Range} */
             var r = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column + (w?.word?.length ?? 0));
@@ -277,10 +252,33 @@ function setupJSONata(_monaco: monaco.editor.IStandaloneEditorConstructionOption
                 range: r,
                 contents: [
                     { value: '**`' + title + '`**' },
-                    // { value: '```html\n' + body + '\n```' },
-                    { value: body },
+                    { value: desc },
                 ]
             }
         }
+    })
+
+    // Define a new theme that contains only rules that match this language
+    monaco.editor.defineTheme('jsonataTheme-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+            { token: 'variable', foreground: 'ff4000' },
+        ],
+        colors: {
+            // "editor.background": '#fffffb'
+        }
+    });
+    monaco.editor.defineTheme('jsonataTheme-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+            { token: 'variable', foreground: 'ff4000' },
+        ],
+        colors: {
+            // "editor.background": '#fffffb'
+        }
     });
 }
+
+export { setupJSONata }

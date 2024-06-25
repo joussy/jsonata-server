@@ -101,6 +101,7 @@ import * as monaco from 'monaco-editor'
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css'
+import { setupJSONata } from './setupMonaco'
 
 enum ColorTheme {
     Auto = "auto",
@@ -212,11 +213,14 @@ export default defineComponent({
             })
             localStorage.setItem("config", configAsString);
         },
-        initializeEditors() {
-            this.registerJsonata();
-            window.MonacoEnvironment = {
-                getWorker: function (workerId: string, label: string): Promise<Worker> | Worker {
-                    return new jsonWorker();
+        initializeEditors() { 
+            if (!window.MonacoEnvironment) {
+                setupJSONata();
+
+                window.MonacoEnvironment = {
+                    getWorker: function (): Promise<Worker> | Worker {
+                        return new jsonWorker();
+                    }
                 }
             }
 
@@ -311,77 +315,11 @@ export default defineComponent({
             }
             this.processing = false;
         },
-        registerJsonata() {
-            // Register a new language
-            monaco.languages.register({ id: 'jsonata' });
-
-            // Register a tokens provider for the language
-            monaco.languages.setMonarchTokensProvider('jsonata', {
-                tokenizer: {
-                    root: [
-                        [/\/\*.*\*\//, "jsonata-comment"],
-                        [/'.*?'/, "jsonata-string"],
-                        [/".*?"/, "jsonata-string"],
-                        [/\$[a-zA-Z0-9_]*/, "jsonata-variable"],
-                        [/[a-zA-Z0-9_]+/, "jsonata-names"],
-                    ]
-                }
-            });
-
-            const brackets = [
-                { open: '(', close: ')' },
-                { open: '[', close: ']' },
-                { open: '{', close: '}' },
-                { open: '"', close: '"' },
-                { open: '\'', close: '\'' },
-                { open: '`', close: '`' },
-            ];
-            monaco.languages.setLanguageConfiguration('jsonata', {
-                brackets: [['(', ')'], ['[', ']'], ['{', '}']],
-                autoClosingPairs: brackets,
-                surroundingPairs: brackets,
-                indentationRules: {
-                    // ^(.*\*/)?\s*\}.*$
-                    decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[}\])].*$/,
-                    // ^.*\{[^}"']*$
-                    increaseIndentPattern: /^((?!\/\/).)*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/
-                }
-            });
-
-            // Define a new theme that contains only rules that match this language
-            monaco.editor.defineTheme('jsonataTheme-light', {
-                base: 'vs',
-                inherit: true,
-                rules: [
-                    { token: 'jsonata-string', foreground: 'a00000' },
-                    { token: 'jsonata-comment', foreground: '008000' },
-                    { token: 'jsonata-variable', foreground: 'ff4000' },
-                    { token: 'jsonata-names', foreground: '0000c0' },
-                ],
-                colors: {
-                    // "editor.background": '#fffffb'
-                }
-            });
-            monaco.editor.defineTheme('jsonataTheme-dark', {
-                base: 'vs-dark',
-                inherit: true,
-                rules: [
-                    { token: 'jsonata-string', foreground: 'ce9178' },
-                    { token: 'jsonata-comment', foreground: '008000' },
-                    { token: 'jsonata-variable', foreground: 'ff4000' },
-                    { token: 'jsonata-names', foreground: '00A4F3' },
-                ],
-                colors: {
-                    // "editor.background": '#fffffb'
-                }
-            });
-        }
     }
 });
 </script>
 
 <style>
-
 .splitpanes {
     background-color: #f8f8f8;
 }
