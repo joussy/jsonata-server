@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const jsonata = require('jsonata');
+const xmlJs = require('xml-js');
 const { stringify, parse } = require('csv/sync');
 
 router.get('/', function (req, res, next) {
@@ -9,7 +10,7 @@ router.get('/', function (req, res, next) {
 
 router.post('/api/jsonata', async (req, res, next) => {
   let jsonInput;
-  if (req.body.csvInput) {
+  if (req.body.inputFormat == 'csv') {
     // Parse CSV input
     try {
       jsonInput = parse(req.body.input, {
@@ -21,13 +22,23 @@ router.post('/api/jsonata', async (req, res, next) => {
       return res.status(400).send({ error: `CSV Input error`, details: error.message });
     }
   }
-  else {
+  else if (req.body.inputFormat == 'json') {
     // Parse JSON input
     try {
       jsonInput = JSON.parse(req.body.input);
     } catch (error) {
       return res.status(400).send({ error: `JSON Input error`, details: error.message });
     }
+  }
+  else if (req.body.inputFormat == 'xml') {
+    try {
+      jsonInput = xmlJs.xml2js(req.body.input, {compact: true})
+    } catch(error) {
+      return res.status(400).send({ error: `XML Input error`, details: error.message });
+    }
+  }
+  else {
+    return res.status(400).send({ error: "Please specify input format" });
   }
 
   // Check for empty JSON input
@@ -62,7 +73,7 @@ router.post('/api/jsonata', async (req, res, next) => {
       return res.status(400).send({ error: "JSONata Expression error", details: error });
     }
 
-    if (req.body.csvOutput) {
+    if (req.body.outputFormat == 'csv') {
       // Check if the result is an array
       if (!Array.isArray(jsonResult)) {
         return res.status(400).send({ error: "CSV generation error", details: "The expression must return an array for CSV conversion" });
@@ -76,8 +87,19 @@ router.post('/api/jsonata', async (req, res, next) => {
         return res.status(400).send({ error: "CSV generation error", details: err.message });
       }
     }
-    else {
-      return res.send(JSON.stringify(jsonResult, null, 2));
+    else if (req.body.outputFormat == 'json') {
+      try {
+        const jsonOutputString = JSON.stringify(jsonResult, null, 2);
+        return res.send(jsonOutputString);
+      } catch (err) {
+        return res.status(400).send({ error: "Output -> JSON error", details: err.message });
+      }
+    }
+    else if (req.body.outputFormat == 'xml') {
+      const xml = xmlJs.js2xml(jsonResult, {compact: true, spaces: 2});
+      return res.send(xml);
+    }   else {
+      return res.status(400).send({ error: "Please specify output format" });
     }
 });
 
@@ -89,7 +111,7 @@ function getBindings(expression) {
   let bindings;
   let errorStr;
   if (bindingString?.length > 2) {
-    try {
+    try { 
       bindings = new Function(`return (${bindingString})`)();
     }
     catch (error) {

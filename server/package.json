@@ -11,11 +11,11 @@
     "debug": "~2.6.9",
     "express": "~4.19.2",
     "jsonata": "^2.0.5",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "xml-js": "^1.6.11"
   },
   "description": "A server-side processor for JSONata that supports JSON and CSV input/output",
   "main": "bin/www",
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/joussy/jsonata-server.git"
