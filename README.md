@@ -1,13 +1,15 @@
 # JSONata Server
-A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) that supports JSON and CSV input/output, with a feature-rich UI editor powered by [Monaco Editor](https://github.com/microsoft/monaco-editor)
+A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) that supports JSON, XML and CSV input/output, with a feature-rich UI editor powered by [Monaco Editor](https://github.com/microsoft/monaco-editor)
 
 ## Features
 - **Unlimited Processing Time**: Server-side processing removes browser limitations.
-- **Flexible Input/Output**: Supports both JSON and CSV formats.
+- **Flexible Input/Output**: Supports both JSON, XML and CSV formats.
 - **Choose your CSV Delimiter**: comma, semi-column and tab are supported
 - **Data Persistence**: Saves data to local storage to prevent data loss.
 - **Dark/Light Mode**: Choose your preferred theme.
 - **Auto-refresh**: Automatically updates the data.
+- **Error Highlighting**: Find easily in your JSONata expression what went wrong
+- **Autocompletion and documentation**: JSONata documentation for functions is embbed
 - **Advanced UI Editor**: Powered by [Monaco Editor](https://github.com/microsoft/monaco-editor).
 
 ## Screenshot
@@ -84,13 +86,15 @@ docker run -d -p 3000:3000 --name jsonata-server jsonata-server
 
 ### Node.js Server
 - [JSONata](https://github.com/jsonata-js/jsonata)
-- [CSV](https://github.com/adaltas/node-csv/)
+- [CSV](https://github.com/adaltas/node-csv)
 - [Express](https://github.com/expressjs/express)
+- [xml-js](https://github.com/nashwaan/xml-js)
 
 ### HTML Client
 - [Vue.js](https://vuejs.org/)
 - [Bootstrap](https://getbootstrap.com/)
 - [Monaco Editor](https://github.com/microsoft/monaco-editor)
+- [Splitpanes](https://antoniandre.github.io/splitpanes)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
