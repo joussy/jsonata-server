@@ -84,7 +84,7 @@ router.post('/api/jsonata', async (req, res, next) => {
 function getBindings(expression) {
   const marker = "//BINDINGS";
   const parts = expression.split(marker);
-  let expressionString = parts[0]?.trim();
+  let expressionString = parts[0];
   let bindingString = parts[1]?.trim();
   let bindings;
   let errorStr;

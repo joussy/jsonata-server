@@ -213,7 +213,7 @@ export default defineComponent({
             })
             localStorage.setItem("config", configAsString);
         },
-        initializeEditors() { 
+        initializeEditors() {
             if (!window.MonacoEnvironment) {
                 setupJSONata();
 
@@ -246,6 +246,8 @@ export default defineComponent({
             this.monacoExpression = monaco.editor.create(this.$refs.monacoExpression as HTMLElement, {
                 ...conf,
                 language: 'jsonata',
+                minimap: { enabled: false },
+                hover: { above: false },
                 theme: 'jsonataTheme',
                 value: localStorage.getItem('expressionText') ?? `$`
             });
@@ -309,12 +311,29 @@ export default defineComponent({
                     let error = JSON.parse(data);
                     let errorText = `${error.error}\nDetails: ${JSON.stringify(error.details, null, 2)}`.replace('\n', "\n");
                     toRaw(this.monacoResult).setValue(errorText);
+                    let model = toRaw(this.monacoExpression).getModel()
+                    if (model) {
+                        this.setErrorMarker(model, error.details.position, error.details.position + 3, error.details.message);
+                    }
                 }
             } catch (error: any) {
                 toRaw(this.monacoResult).setValue(`Error:\n${JSON.stringify(error?.message)}`);
             }
             this.processing = false;
         },
+        setErrorMarker(model: monaco.editor.ITextModel, start: number, end: number, message: string) {
+            const from = model.getPositionAt(start)
+            const to = model.getPositionAt(end)
+            let marker: monaco.editor.IMarkerData = {
+                message: message,
+                severity: monaco.MarkerSeverity.Error,
+                startLineNumber: from.lineNumber,
+                startColumn: from.column,
+                endLineNumber: to.lineNumber,
+                endColumn: to.column,
+            };
+            monaco.editor.setModelMarkers(model, "owner", [marker]);
+        }
     }
 });
 </script>
