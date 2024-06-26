@@ -181,7 +181,6 @@ export default defineComponent({
     },
     methods: {
         resized() {
-            console.log([this.paneInputEditorSize, this.paneExpressionEditorSize])
             this.saveConfigurationToLocalStorage();
         },
         updateColorTheme() {
@@ -304,6 +303,7 @@ export default defineComponent({
                     })
                 });
                 let data = await response.text();
+                this.clearDecorations(toRaw(this.monacoExpression));
                 if (response.status == 200) {
                     toRaw(this.monacoResult).setValue(data);
                 }
@@ -311,17 +311,31 @@ export default defineComponent({
                     let error = JSON.parse(data);
                     let errorText = `${error.error}\nDetails: ${JSON.stringify(error.details, null, 2)}`.replace('\n', "\n");
                     toRaw(this.monacoResult).setValue(errorText);
-                    let model = toRaw(this.monacoExpression).getModel()
-                    if (model) {
-                        this.setErrorMarker(model, error.details.position, error.details.position + 3, error.details.message);
-                    }
+                    this.setErrorMarker(toRaw(this.monacoExpression), error.details.position, error.details.position + 3, error.details.message);
                 }
             } catch (error: any) {
                 toRaw(this.monacoResult).setValue(`Error:\n${JSON.stringify(error?.message)}`);
             }
             this.processing = false;
         },
-        setErrorMarker(model: monaco.editor.ITextModel, start: number, end: number, message: string) {
+        clearDecorations(editor: monaco.editor.IStandaloneCodeEditor) {
+            const model = editor.getModel();
+
+            if (!model) {
+                return false;
+            }
+            const existingDecorations = model.getAllDecorations();
+            if (existingDecorations) {
+                editor.removeDecorations(existingDecorations.map(d => d.id));
+            }
+        },
+        setErrorMarker(editor: monaco.editor.IStandaloneCodeEditor, start: number, end: number, message: string) {
+            const model = editor.getModel();
+            
+            if (!model) {
+                return;
+            }
+
             const from = model.getPositionAt(start)
             const to = model.getPositionAt(end)
             let marker: monaco.editor.IMarkerData = {
@@ -333,6 +347,16 @@ export default defineComponent({
                 endColumn: to.column,
             };
             monaco.editor.setModelMarkers(model, "owner", [marker]);
+
+            editor.createDecorationsCollection([
+                {
+                    range: new monaco.Range(from.lineNumber, 1, to.lineNumber, 1),
+                    options: {
+                        isWholeLine: true,
+                        linesDecorationsClassName: "errorLineDecoration",
+                    },
+                }
+            ]);
         }
     }
 });
