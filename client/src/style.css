@@ -12,3 +12,9 @@ html {
 #app, .monaco-editor {
     height: 100%;
 }
+
+.errorLineDecoration {
+	background: #ff4000;
+	width: 5px !important;
+	margin-left: 3px;
+}
