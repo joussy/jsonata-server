@@ -8,6 +8,7 @@
                 <select v-model="inputFormat" class="form-select">
                     <option value="json" default>Json</option>
                     <option value="csv">CSV</option>
+                    <option value="xml">XML</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -27,6 +28,7 @@
                 <select v-model="outputFormat" class="form-select">
                     <option value="json">Json</option>
                     <option value="csv">CSV</option>
+                    <option value="xml">XML</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -296,8 +298,8 @@ export default defineComponent({
                     body: JSON.stringify({
                         input: inputText,
                         expression: expressionText,
-                        csvOutput: this.outputFormat == 'csv',
-                        csvInput: this.inputFormat == 'csv',
+                        outputFormat: this.outputFormat,
+                        inputFormat: this.inputFormat,
                         csvInputDelimiter: this.csvInputDelimiter,
                         csvOutputDelimiter: this.csvOutputDelimiter
                     })
