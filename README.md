@@ -1,3 +1,4 @@
+[![npm](https://img.shields.io/npm/v/jsonata-server.svg)](https://www.npmjs.com/package/jsonata-server)
 # JSONata Server
 A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) that supports JSON, XML and CSV input/output, with a feature-rich UI editor powered by [Monaco Editor](https://github.com/microsoft/monaco-editor)
 
