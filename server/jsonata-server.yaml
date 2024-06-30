@@ -1,0 +1,123 @@
+openapi: 3.1.0
+x-stoplight:
+  id: 2a86pzw9d4dw2
+info:
+  title: jsonata-server
+  version: '1.0'
+  summary: JSONata server
+  description: 'A server-side processor for JSONata that supports JSON, XML and CSV input/output'
+  contact:
+    name: joussy
+    url: 'https://github.com/joussy/jsonata-server'
+  license:
+    name: MIT
+    url: 'https://github.com/joussy/jsonata-server/blob/main/LICENSE'
+  termsOfService: 'https://github.com/joussy/jsonata-server/blob/main/LICENSE'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /api/jsonata:
+    post:
+      summary: ''
+      operationId: post-api-jsonata
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JSONata'
+      description: Transform input using JSONata expression
+      tags:
+        - JSONata
+components:
+  schemas:
+    JSONata:
+      title: JSONata
+      x-stoplight:
+        id: zcqgafawipgi8
+      type: object
+      properties:
+        input:
+          type: string
+          description: 'Input data formatted with XML, CSV or JSON'
+        expression:
+          type: string
+          description: JSONata expression
+        outputFormat:
+          type: string
+          description: output format
+        inputFormat:
+          type: string
+          description: input format
+        csvInputDelimiter:
+          type: string
+          description: The CSV delimiter used for parsing the CSV input
+        csvOutputDelimiter:
+          type: string
+          description: The CSV delimiter used for generating the CSV output
+      examples:
+        - input: |-
+            [
+                {
+                    "sample1": "test1",
+                    "sample2": "test2",
+                    "sample3": "test3"
+                },
+                {
+                    "sample1": "test4",
+                    "sample2": "test5",
+                    "sample3": "test6"
+                },
+                {
+                    "sample1": "test7",
+                    "sample2": "test8",
+                    "sample3": "test9"
+                },
+                {
+                    "sample1": "test10",
+                    "sample2": "test11",
+                    "sample3": "test12"
+                },
+                {
+                    "sample1": "test13",
+                    "sample2": "test14",
+                    "sample3": "test15"
+                },
+                {
+                    "sample1": "test4",
+                    "sample2": "test5",
+                    "sample3": "test6"
+                },
+                {
+                    "sample1": "test4",
+                    "sample2": "test5",
+                    "sample3": "test6"
+                }
+            ]
+          expression: "$.{\r\n    \"a\": sample1,\r\n    \"b\": sample2,\r\n    \"c\": sample3\r\n} "
+          outputFormat: csv
+          inputFormat: json
+          csvInputDelimiter: ','
+          csvOutputDelimiter: ','
+      description: ''
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+      x-examples:
+        Example 1:
+          error: CSV generation error
+          details: The expression must return an array for CSV conversion
+tags:
+  - name: JSONata
