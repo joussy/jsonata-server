@@ -103,7 +103,7 @@ import * as monaco from 'monaco-editor'
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css'
-import { setupJSONata } from './setupMonaco'
+import { setupLanguages } from './setupMonaco'
 
 enum ColorTheme {
     Auto = "auto",
@@ -159,19 +159,23 @@ export default defineComponent({
     watch: {
         outputFormat() {
             this.saveConfigurationToLocalStorage();
-            this.onEditorChange();
+            this.onEditorChangeLanguage(false);
+            this.onEditorChangeContent();
         },
         inputFormat() {
             this.saveConfigurationToLocalStorage();
-            this.onEditorChange();
+            this.onEditorChangeLanguage(true);
+            this.onEditorChangeContent();
         },
         csvInputDelimiter() {
             this.saveConfigurationToLocalStorage();
-            this.onEditorChange();
+            this.onEditorChangeLanguage(true);
+            this.onEditorChangeContent();
         },
         csvOutputDelimiter() {
             this.saveConfigurationToLocalStorage();
-            this.onEditorChange();
+            this.onEditorChangeLanguage(false);
+            this.onEditorChangeContent();
         },
         autoRefresh() {
             this.saveConfigurationToLocalStorage();
@@ -182,6 +186,26 @@ export default defineComponent({
         }
     },
     methods: {
+        onEditorChangeLanguage(isInput: boolean) {
+            const editor = toRaw(isInput ? this.monacoInput : this.monacoResult);
+            const model = editor?.getModel();
+            if (!model) {
+                return;
+            }
+            let language = isInput ? this.inputFormat : this.outputFormat;
+            const mode = this.isLight ? 'light' : 'dark';
+            let theme = `${language}-${mode}`;
+            let delimiter = null;
+
+            if (language == 'csv') {
+                delimiter = isInput ? this.csvInputDelimiter : this.csvOutputDelimiter;
+                language = `${language}-${delimiter}`;
+            }
+
+            console.log({ language, theme })
+            // monaco.editor.setTheme(theme)
+            monaco.editor.setModelLanguage(model, language)
+        },
         resized() {
             this.saveConfigurationToLocalStorage();
         },
@@ -216,7 +240,7 @@ export default defineComponent({
         },
         initializeEditors() {
             if (!window.MonacoEnvironment) {
-                setupJSONata();
+                setupLanguages();
 
                 window.MonacoEnvironment = {
                     getWorker: function (): Promise<Worker> | Worker {
@@ -260,13 +284,13 @@ export default defineComponent({
             }));
 
             this.monacoInput.onDidChangeModelContent(() => {
-                this.onEditorChange()
+                this.onEditorChangeContent()
             });
             this.monacoExpression.onDidChangeModelContent(() => {
-                this.onEditorChange()
+                this.onEditorChangeContent()
             });
         },
-        onEditorChange() {
+        onEditorChangeContent() {
             if (this.autoRefresh && this.initialized) {
                 if (this.timer) {
                     clearTimeout(this.timer);
@@ -333,7 +357,7 @@ export default defineComponent({
         },
         setErrorMarker(editor: monaco.editor.IStandaloneCodeEditor, start: number, end: number, message: string) {
             const model = editor.getModel();
-            
+
             if (!model) {
                 return;
             }

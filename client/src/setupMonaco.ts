@@ -257,13 +257,33 @@ function setupJSONata() {
             }
         }
     })
+}
 
+function setupCsv(delimiter: string) {
+    const name = `csv-${delimiter}`;
+    monaco.languages.register({ id: name });
+
+    monaco.languages.setMonarchTokensProvider(name, {
+        tokenizer: {
+            root: [
+                [new RegExp(`[^${delimiter}]+`), 'csv-column'], // /[^,]+/
+                [new RegExp(`${delimiter}`), 'csv-delimiter'], // /,/
+            ]
+        }
+    });
+
+}
+
+function setupTheme() {
     // Define a new theme that contains only rules that match this language
     monaco.editor.defineTheme('jsonataTheme-light', {
         base: 'vs',
         inherit: true,
         rules: [
-            { token: 'variable', foreground: 'ff4000' },
+            { token: 'variable', foreground: 'ff4000', background: '000000' },
+            { token: 'csv-column', foreground: '000000' , background: '000000'},
+            { token: 'csv-delimiter', foreground: 'ff4000', background: '000000' }
+
         ],
         colors: {
             // "editor.background": '#fffffb'
@@ -274,6 +294,8 @@ function setupJSONata() {
         inherit: true,
         rules: [
             { token: 'variable', foreground: 'ff4000' },
+            { token: 'csv-column', foreground: 'ffffff' },
+            { token: 'csv-delimiter', foreground: 'ff4000' }
         ],
         colors: {
             // "editor.background": '#fffffb'
@@ -281,4 +303,12 @@ function setupJSONata() {
     });
 }
 
-export { setupJSONata }
+function setupLanguages() {
+    setupJSONata();
+    setupCsv(';');
+    setupCsv(',');
+    setupCsv('\t');
+    setupTheme();
+}
+
+export { setupLanguages }
