@@ -62,6 +62,7 @@ jobs:
       - name: NPM publish
         run: |
           cd server
+          cp ../README.md .
           npm version --no-git-tag-version ${{ github.ref_name }}
           npm publish --allow-same-version
         env:
