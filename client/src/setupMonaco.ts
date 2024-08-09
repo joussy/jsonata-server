@@ -283,10 +283,9 @@ function setupTheme() {
             { token: 'variable', foreground: 'ff4000', background: '000000' },
             { token: 'csv-column', foreground: '000000' , background: '000000'},
             { token: 'csv-delimiter', foreground: 'ff4000', background: '000000' }
-
         ],
         colors: {
-            // "editor.background": '#fffffb'
+            "editor.background": '#F1F5F9',
         }
     });
     monaco.editor.defineTheme('jsonataTheme-dark', {

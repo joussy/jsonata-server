@@ -1,6 +1,6 @@
 <template>
-    <div class="card mb-1" :class="{ 'bg-light': isLight }">
-        <div class="card-body row d-flex align-items-center">
+    <div class="m-2" :class="{ 'bg-white': isLight }">
+        <div class="row d-flex align-items-center">
             <div class="col-auto">
                 <label>
                     Input Format
@@ -83,15 +83,18 @@
             <splitpanes @resized="resized"
                 @resize="paneInputEditorSize = $event[0].size; paneExpressionEditorSize = $event[1].size"
                 :dbl-click-splitter="false">
-                <pane :size="paneInputEditorSize">
-                    <div class="monaco-editor" ref="monacoInput" id="monaco-input"></div>
+                <pane :size="paneInputEditorSize" class="monaco-container">
+                    <div class="monaco-header">Input</div>
+                        <div class="monaco-editor" ref="monacoInput" id="monaco-input"></div>
                 </pane>
-                <pane :size="paneExpressionEditorSize">
+                <pane :size="paneExpressionEditorSize" class="monaco-container">
+                    <div class="monaco-header">JSONata</div>
                     <div class="monaco-editor" ref="monacoExpression" id="monaco-expression"></div>
                 </pane>
             </splitpanes>
         </pane>
-        <pane :size="paneOutputEditorSize">
+        <pane :size="paneOutputEditorSize" class="monaco-container">
+            <div class="monaco-header">Output</div>
             <div class="monaco-editor" ref="monacoResult" id="monaco-result"></div>
         </pane>
     </splitpanes>
@@ -389,12 +392,30 @@ export default defineComponent({
 </script>
 
 <style>
+@font-face {
+    font-family: inter;
+    src: url('~@/assets/fonts/<static_font_file>.ttf');
+}
+
+.monaco-container {
+    background-color: #F1F5F9;
+    /*border-radius: 6px;*/
+    border-radius: 16px;
+    border: 1px solid black;
+    padding: 10px;
+    height: 100%;
+}
+
+.monaco-header {
+    font-family: var(--font-sans),ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"
+}
+
 .splitpanes {
     background-color: #f8f8f8;
 }
 
 .splitpanes__splitter {
-    background-color: #ccc;
+    background-color: white;
     position: relative;
 }
 
