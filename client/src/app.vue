@@ -29,6 +29,7 @@
                     <option value="json">Json</option>
                     <option value="csv">CSV</option>
                     <option value="xml">XML</option>
+                    <option value="raw">Raw</option>
                 </select>
             </div>
             <div class="col-auto">

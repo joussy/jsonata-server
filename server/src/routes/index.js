@@ -98,7 +98,11 @@ router.post('/api/jsonata', async (req, res, next) => {
     else if (req.body.outputFormat == 'xml') {
       const xml = xmlJs.js2xml(jsonResult, {compact: true, spaces: 2});
       return res.send(xml);
-    }   else {
+    }
+    else if (req.body.outputFormat == 'raw') {
+      return res.send(jsonResult);
+    }
+    else {
       return res.status(400).send({ error: "Please specify output format" });
     }
 });
