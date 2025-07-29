@@ -3,6 +3,7 @@ var router = express.Router();
 const jsonata = require('jsonata');
 const xmlJs = require('xml-js');
 const { stringify, parse } = require('csv/sync');
+const mustache = require('mustache');
 
 router.get('/', function (req, res, next) {
   res.render('index');
@@ -114,14 +115,21 @@ function getBindings(expression) {
   let bindingString = parts[1]?.trim();
   let bindings;
   let errorStr;
+  bindings = {};
   if (bindingString?.length > 2) {
     try { 
       bindings = new Function(`return (${bindingString})`)();
+
     }
     catch (error) {
       errorStr = error.message;
     }
   }
+
+  bindings.mustache = function(data, template) {
+    return mustache.render(template, data);
+  };
+
   return {
     expression: expressionString,
     bindings: bindings,

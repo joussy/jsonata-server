@@ -6,12 +6,14 @@ A server-side processor for [JSONata](https://github.com/jsonata-js/jsonata) tha
 - **Unlimited Processing Time**: Server-side processing removes browser limitations.
 - **Flexible Input/Output**: Supports both JSON, XML and CSV formats.
 - **Choose your CSV Delimiter**: comma, semi-column and tab are supported
+- **File Generation**: No need to copy-paste into files, you can download the result as a file
 - **Data Persistence**: Saves data to local storage to prevent data loss.
 - **Dark/Light Mode**: Choose your preferred theme.
 - **Auto-refresh**: Automatically updates the data.
 - **Error Highlighting**: Find easily in your JSONata expression what went wrong
 - **Autocompletion and documentation**: JSONata documentation for functions is embbed
 - **Advanced UI Editor**: Powered by [Monaco Editor](https://github.com/microsoft/monaco-editor).
+- **JS Bindings and Mustache templating**: Go beyond Jsonata capabilities
 
 ## Screenshot
 ![Preview](assets/screenshot.png)
@@ -32,6 +34,18 @@ Example:
 will produce the following result
 ```json
 "Hello there!"
+```
+
+## Mustache templating
+Simply call `$mustache` to perform render a template
+```
+{"firstName": "John", "lastName": "Doe"} ~> $mustache("
+Hello {{firstName}} {{lastName}} !!
+")
+```
+will produce the following result (Raw output mode):
+```
+Hello John Doe !!
 ```
 
 ## Getting Started

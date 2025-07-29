@@ -12,7 +12,8 @@
     "express": "~4.19.2",
     "jsonata": "^2.0.5",
     "morgan": "~1.9.1",
-    "xml-js": "^1.6.11"
+    "xml-js": "^1.6.11",
+    "mustache": "^4.2.0"
   },
   "description": "A server-side processor for JSONata that supports JSON and CSV input/output",
   "main": "bin/www",
