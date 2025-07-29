@@ -1,77 +1,85 @@
 <template>
     <div class="card mb-1" :class="{ 'bg-light': isLight }">
-        <div class="card-body row d-flex align-items-center">
+        <div class="card-body row d-flex align-items-center m-0 p-0 pb-1">
             <div class="col-auto">
-                <label>
-                    Input Format
-                </label>
-                <select v-model="inputFormat" class="form-select">
+                <small>Input Format</small>
+                <select v-model="inputFormat" class="form-select form-select-sm">
                     <option value="json" default>Json</option>
                     <option value="csv">CSV</option>
                     <option value="xml">XML</option>
                 </select>
             </div>
-            <div class="col-auto">
-                <label v-show="inputFormat == 'csv'">
-                    Input Delimiter
-                    <select class="form-select" v-model="csvInputDelimiter" :disabled="!inputFormat">
+            <div v-if="inputFormat == 'csv'" class="col-auto border-start">
+                <label>
+                    <small>Input Delimiter</small>
+                    <select class="form-select  form-select-sm" v-model="csvInputDelimiter" :disabled="!inputFormat">
                         <option value=";">;</option>
                         <option value=",">,</option>
                         <option value="&#9;">\t</option>
                     </select>
                 </label>
             </div>
-            <div class="col-auto">
-                <label>
+            <div class="col-auto border-start">
+                <small>
                     Output Format
-                </label>
-                <select v-model="outputFormat" class="form-select">
+                </small>
+                <select v-model="outputFormat" class="form-select  form-select-sm">
                     <option value="json">Json</option>
                     <option value="csv">CSV</option>
                     <option value="xml">XML</option>
                     <option value="raw">Raw</option>
                 </select>
             </div>
-            <div class="col-auto">
-                <label v-show="outputFormat == 'csv'">
-                    Output Delimiter
-                    <select class="form-select" v-model="csvOutputDelimiter" :disabled="!outputFormat">
+            <div v-if="outputFormat == 'csv'" class="col-auto border-start">
+                <label>
+                    <small>Output Delimiter</small>
+                    <select class="form-select form-select-sm" v-model="csvOutputDelimiter" :disabled="!outputFormat">
                         <option value=";">;</option>
                         <option value=",">,</option>
                         <option value="&#9;">\t</option>
                     </select>
                 </label>
             </div>
-            <div class="col-auto">
+            <div class="col-auto border-start">
                 <label>
-                    Color Theme
-                    <select class="form-select" v-model="colorTheme">
+                    <small>Color Theme</small>
+                    <select class="form-select form-select-sm" v-model="colorTheme">
                         <option :value="ColorTheme.Auto">Auto</option>
                         <option :value="ColorTheme.Light">Light</option>
                         <option :value="ColorTheme.Dark">Dark</option>
                     </select>
                 </label>
             </div>
-            <div class="col-auto">
+            <div class="col-auto d-flex flex-column border-start">
                 <div class="form-check form-switch">
                     <input v-model="autoRefresh" class="form-check-input" type="checkbox" role="switch"
-                        id="autorefresh">
-                    <label class="form-check-label" for="autorefresh">Auto-Refresh</label>
+                        id="autorefresh" />
+                    <small class="form-check-label" for="autorefresh">Auto-Refresh</small>
                 </div>
-                <button v-show="!processing" type="button" class="btn border border-primary" @click="compute">
-                    Convert <i class="bi bi-play"></i>
+                <button v-show="!processing" type="button" class="btn btn-primary btn-sm" @click="compute(false)">
+                    <i class="bi bi-play-fill me-1"></i>Convert
                 </button>
                 <span v-show="processing" class="spinner-border text-primary" role="status"></span>
             </div>
-            <div class="col-auto ms-auto">
-                <div>
-                    <a class="btn border" href="https://github.com/joussy/jsonata-server" target="_blank">
-                        <i class="p-2 bi bi-github"></i><span>Project Page</span>
+            <div class="col-auto d-flex flex-column align-self-stretch border-start">
+                <input type="text" 
+                class="form-control form-control-sm filename-input"
+                v-model="filename"
+                placeholder="enter filename ..." />
+                    <button v-show="!processing" type="button" class="btn btn-sm btn-secondary" @click="compute(true)">
+                     <i class="bi bi-download me-2"></i>Convert to .{{getFileExtension()}} file
+                </button>
+                <span v-show="processing" class="spinner-border text-primary" role="status"></span>
+            </div>
+            <div class="col-auto ms-auto d-flex flex-column">
+                <div class="d-flex flex-column  align-self-strech">
+                    <a class="btn btn-sm border d-flex align-items-center" href="https://github.com/joussy/jsonata-server" target="_blank">
+                        <i class="pe-2 bi bi-github"></i><span>Project Page</span>
                     </a>
                 </div>
-                <div>
-                    <a class="btn border" href="https://docs.jsonata.org/simple" target="_blank">
-                        <i class="p-2 bi bi-box-arrow-up-right"></i><span>Jsonata Docs</span>
+                <div class="d-flex flex-column align-self-strech">
+                    <a class="btn btn-sm border d-flex align-items-center" href="https://docs.jsonata.org/simple" target="_blank">
+                        <i class="pe-2 bi bi-box-arrow-up-right"></i><span>Jsonata Docs</span>
                     </a>
                 </div>
             </div>
@@ -134,7 +142,8 @@ export default defineComponent({
             monacoInput: null as monaco.editor.IStandaloneCodeEditor | null,
             monacoExpression: null as monaco.editor.IStandaloneCodeEditor | null,
             monacoResult: null as monaco.editor.IStandaloneCodeEditor | null,
-            isLight: true
+            isLight: true,
+            filename: ''
         }
     },
     mounted() {
@@ -151,6 +160,7 @@ export default defineComponent({
             this.paneInputEditorSize = configLocalStorage.paneVerticalSize;
             this.paneExpressionEditorSize = configLocalStorage.paneExpressionEditorSize;
             this.paneOutputEditorSize = configLocalStorage.paneOutputEditorSize;
+            this.filename = configLocalStorage.filename;
         }
         this.initializeEditors();
         this.updateColorTheme();
@@ -235,7 +245,8 @@ export default defineComponent({
                 paneVerticalSize: this.paneInputEditorSize,
                 paneExpressionEditorSize: this.paneExpressionEditorSize,
                 paneHorizontalSize: this.paneHorizontalSize,
-                paneOutputEditorSize: this.paneOutputEditorSize
+                paneOutputEditorSize: this.paneOutputEditorSize,
+                filename: this.filename
             })
             localStorage.setItem("config", configAsString);
         },
@@ -296,10 +307,10 @@ export default defineComponent({
                 if (this.timer) {
                     clearTimeout(this.timer);
                 }
-                this.timer = setTimeout(this.compute.bind(this), 800);
+                this.timer = setTimeout(this.compute.bind(this, false), 800);
             }
         },
-        async compute() {
+        async compute(toFile: boolean) {
             if (!this.monacoInput || !this.monacoExpression || !this.monacoResult) {
                 return;
             }
@@ -332,7 +343,24 @@ export default defineComponent({
                 let data = await response.text();
                 this.clearDecorations(toRaw(this.monacoExpression));
                 if (response.status == 200) {
-                    toRaw(this.monacoResult).setValue(data);
+                    if (toFile) {
+                        const blob = new Blob([data], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        let filename = this.filename.trim();
+                        if (!filename) {
+                            filename = 'result';
+                        }
+                        a.download = `${filename}.${this.getFileExtension()}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+                    else {
+                        toRaw(this.monacoResult).setValue(data);
+                    }
                 }
                 else {
                     let error = JSON.parse(data);
@@ -384,6 +412,18 @@ export default defineComponent({
                     },
                 }
             ]);
+        },
+        getFileExtension(): string {
+            switch (this.outputFormat) {
+                case 'json':
+                    return 'json';
+                case 'csv':
+                    return 'csv';
+                case 'xml':
+                    return 'xml';
+                default:
+                    return 'txt';
+            }
         }
     }
 });
@@ -424,5 +464,8 @@ export default defineComponent({
     top: -5px;
     bottom: -5px;
     width: 100%;
+}
+.filename-input {
+    /* max-width: 150px; */
 }
 </style>
