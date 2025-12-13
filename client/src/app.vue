@@ -1,5 +1,5 @@
 <template>
-    <div class="card mb-1" :class="{ 'bg-light': isLight }">
+    <div class="card mb-1">
         <div class="card-body row d-flex align-items-center m-0 p-0 pb-1">
             <div class="col-auto">
                 <small>Input Format</small>
@@ -28,6 +28,7 @@
                     <option value="csv">CSV</option>
                     <option value="xml">XML</option>
                     <option value="raw">Raw</option>
+                    <option value="chart">Chart.js</option>
                 </select>
             </div>
             <div v-if="outputFormat == 'csv'" class="col-auto border-start">
@@ -101,7 +102,11 @@
             </splitpanes>
         </pane>
         <pane :size="paneOutputEditorSize">
-            <div class="monaco-editor" ref="monacoResult" id="monaco-result"></div>
+            <div v-show="outputDiv == 'monaco'" class="monaco-editor" ref="monacoResult" id="monaco-result"></div>
+            <Chart v-if="outputDiv == 'chart'" id="chart-result" 
+            :chartData="chartData"
+            :isLight="isLight"
+            ></Chart>
         </pane>
     </splitpanes>
 </template>
@@ -113,6 +118,7 @@ import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css'
 import { setupLanguages } from './setupMonaco'
+import Chart from './chart.vue';
 
 enum ColorTheme {
     Auto = "auto",
@@ -121,7 +127,7 @@ enum ColorTheme {
 }
 
 export default defineComponent({
-    components: { Splitpanes, Pane },
+    components: { Splitpanes, Pane, Chart },
     data() {
         return {
             outputFormat: "json",
@@ -143,7 +149,8 @@ export default defineComponent({
             monacoExpression: null as monaco.editor.IStandaloneCodeEditor | null,
             monacoResult: null as monaco.editor.IStandaloneCodeEditor | null,
             isLight: true,
-            filename: ''
+            filename: '',
+            chartData: [] as Record<string, any>[],
         }
     },
     mounted() {
@@ -194,6 +201,14 @@ export default defineComponent({
         colorTheme() {
             this.saveConfigurationToLocalStorage();
             this.updateColorTheme();
+        }
+    },
+    computed: {
+        outputDiv(): 'monaco' | 'chart'{
+            return this.outputFormat == 'chart' ? 'chart' : 'monaco'
+        },
+        serverOutputFormat(): string {
+            return this.outputFormat == 'chart' ? 'json' : this.outputFormat
         }
     },
     methods: {
@@ -334,7 +349,7 @@ export default defineComponent({
                     body: JSON.stringify({
                         input: inputText,
                         expression: expressionText,
-                        outputFormat: this.outputFormat,
+                        outputFormat: this.serverOutputFormat,
                         inputFormat: this.inputFormat,
                         csvInputDelimiter: this.csvInputDelimiter,
                         csvOutputDelimiter: this.csvOutputDelimiter
@@ -359,7 +374,12 @@ export default defineComponent({
                         URL.revokeObjectURL(url);
                     }
                     else {
-                        toRaw(this.monacoResult).setValue(data);
+                        if (this.outputDiv == 'chart') {
+                            this.chartData = JSON.parse(data);
+                        }
+                        else {
+                            toRaw(this.monacoResult).setValue(data);
+                        }
                     }
                 }
                 else {
