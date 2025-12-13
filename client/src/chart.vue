@@ -118,6 +118,16 @@ export default defineComponent({
                 }
             };
         },
+        getDatasetColors(colors) {
+            return {
+                borderWidth: 2,
+                borderColor: colors.borderColor,
+                backgroundColor: colors.backgroundColor,
+                pointBackgroundColor: colors.borderColor,
+                pointBorderColor: colors.borderColor,
+            };
+        },
+
         renderChart() {
             const canvas = this.$refs.chart as HTMLCanvasElement;
             if (!canvas) return;
@@ -128,11 +138,7 @@ export default defineComponent({
                 data: {
                     datasets: [{
                         data: [],
-                        borderWidth: 2,
-                        borderColor: colors.borderColor,
-                        backgroundColor: colors.backgroundColor,
-                        pointBackgroundColor: colors.borderColor,
-                        pointBorderColor: colors.borderColor,
+                        ...this.getDatasetColors(colors)
                     }]
                 },
                 options: this.getChartOptions(colors)
@@ -147,11 +153,8 @@ export default defineComponent({
             if (!this.chartInstance) return;
             const colors = this.getChartColors();
             const chart = this.chartInstance;
-            // Update dataset colors
-            chart.data.datasets[0].borderColor = colors.borderColor;
-            chart.data.datasets[0].backgroundColor = colors.backgroundColor;
-            chart.data.datasets[0].pointBackgroundColor = colors.borderColor;
-            chart.data.datasets[0].pointBorderColor = colors.borderColor;
+            // Update dataset colors using the same function as initialization
+            Object.assign(chart.data.datasets[0], this.getDatasetColors(colors));
             // Update options using the same function as initialization
             chart.options = {
                 ...chart.options,
