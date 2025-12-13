@@ -1,6 +1,5 @@
 <template>
     <div class="bg-body h-100">
-        Chart.js
         <canvas ref="chart"></canvas>
     </div>
 </template>
@@ -67,16 +66,57 @@ export default defineComponent({
                     borderColor: 'rgba(54, 162, 235, 1)',
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     gridColor: 'rgba(0,0,0,0.1)',
-                    fontColor: '#222'
+                    fontColor: '#222',
+                    tooltipBg: '#fff',
                 };
             } else {
                 return {
                     borderColor: 'rgba(255, 206, 86, 1)',
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
                     gridColor: 'rgba(255,255,255,0.1)',
-                    fontColor: '#fff'
+                    fontColor: '#fff',
+                    tooltipBg: '#222',
                 };
             }
+        },
+
+        getChartOptions(colors) {
+            return {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: colors.fontColor
+                        }
+                    },
+                    title: {
+                        color: colors.fontColor
+                    },
+                    tooltip: {
+                        backgroundColor: colors.tooltipBg,
+                        titleColor: colors.fontColor,
+                        bodyColor: colors.fontColor,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: colors.gridColor
+                        },
+                        ticks: {
+                            color: colors.fontColor
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: colors.gridColor
+                        },
+                        ticks: {
+                            color: colors.fontColor
+                        }
+                    }
+                }
+            };
         },
         renderChart() {
             const canvas = this.$refs.chart as HTMLCanvasElement;
@@ -95,42 +135,7 @@ export default defineComponent({
                         pointBorderColor: colors.borderColor,
                     }]
                 },
-                options: {
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: colors.fontColor
-                            }
-                        },
-                        title: {
-                            color: colors.fontColor
-                        },
-                        tooltip: {
-                            backgroundColor: this.isLight ? '#fff' : '#222',
-                            titleColor: colors.fontColor,
-                            bodyColor: colors.fontColor,
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: colors.gridColor
-                            },
-                            ticks: {
-                                color: colors.fontColor
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: colors.gridColor
-                            },
-                            ticks: {
-                                color: colors.fontColor
-                            }
-                        }
-                    }
-                }
+                options: this.getChartOptions(colors)
             }));
         },
         updateChart() {
@@ -147,30 +152,11 @@ export default defineComponent({
             chart.data.datasets[0].backgroundColor = colors.backgroundColor;
             chart.data.datasets[0].pointBackgroundColor = colors.borderColor;
             chart.data.datasets[0].pointBorderColor = colors.borderColor;
-            // Update options
-            chart.options.plugins = chart.options.plugins || {};
-            chart.options.plugins.legend = chart.options.plugins.legend || {};
-            chart.options.plugins.legend.labels = chart.options.plugins.legend.labels || {};
-            chart.options.plugins.legend.labels.color = colors.fontColor;
-            chart.options.plugins.title = chart.options.plugins.title || {};
-            chart.options.plugins.title.color = colors.fontColor;
-            chart.options.plugins.tooltip = chart.options.plugins.tooltip || {};
-            chart.options.plugins.tooltip.backgroundColor = this.isLight ? '#fff' : '#222';
-            chart.options.plugins.tooltip.titleColor = colors.fontColor;
-            chart.options.plugins.tooltip.bodyColor = colors.fontColor;
-            chart.options.scales = chart.options.scales || {};
-            if (chart.options.scales.x) {
-                chart.options.scales.x.grid = chart.options.scales.x.grid || {};
-                chart.options.scales.x.grid.color = colors.gridColor;
-                chart.options.scales.x.ticks = chart.options.scales.x.ticks || {};
-                chart.options.scales.x.ticks.color = colors.fontColor;
-            }
-            if (chart.options.scales.y) {
-                chart.options.scales.y.grid = chart.options.scales.y.grid || {};
-                chart.options.scales.y.grid.color = colors.gridColor;
-                chart.options.scales.y.ticks = chart.options.scales.y.ticks || {};
-                chart.options.scales.y.ticks.color = colors.fontColor;
-            }
+            // Update options using the same function as initialization
+            chart.options = {
+                ...chart.options,
+                ...this.getChartOptions(colors)
+            };
             chart.update();
         }
     }
