@@ -1,6 +1,12 @@
 <template>
     <div class="bg-body h-100">
         <canvas ref="chart"></canvas>
+        <div class="d-flex justify-content-center">
+            <button @click="resetZoom" class="btn btn-outline-primary mt-2">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                Reset Zoom
+            </button>
+        </div>
     </div>
 </template>
 <script lang="ts">
@@ -22,9 +28,10 @@ import {
 } from 'chart.js';
 
 import 'chartjs-adapter-date-fns';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 Chart.register(BarController, BarElement,
-    CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement, LineController, LineElement, TimeScale);
+    CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement, LineController, LineElement, TimeScale, zoomPlugin);
 
 export default defineComponent({
     components: {},
@@ -99,6 +106,20 @@ export default defineComponent({
                         backgroundColor: colors.tooltipBg,
                         titleColor: colors.fontColor,
                         bodyColor: colors.fontColor,
+                    },
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'x',
+                            modifierKey: 'ctrl',
+                        },
+                        zoom: {
+                            drag: {
+                                enabled: true,
+                                backgroundColor: 'rgba(54,162,235,0.15)'
+                            },
+                            mode: 'x',
+                        }
                     }
                 },
                 scales: {
@@ -166,6 +187,12 @@ export default defineComponent({
                 ...this.getChartOptions(colors)
             };
             chart.update();
+        },
+
+        resetZoom() {
+            if (this.chartInstance && this.chartInstance.resetZoom) {
+                this.chartInstance.resetZoom();
+            }
         }
     }
 });
