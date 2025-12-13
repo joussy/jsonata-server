@@ -5,6 +5,7 @@
 </template>
 <script lang="ts">
 import { defineComponent, shallowRef } from 'vue';
+
 import {
     Chart,
     BarController,
@@ -16,11 +17,14 @@ import {
     LineElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    TimeScale
 } from 'chart.js';
 
+import 'chartjs-adapter-date-fns';
+
 Chart.register(BarController, BarElement,
-    CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement, LineController, LineElement);
+    CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement, LineController, LineElement, TimeScale);
 
 export default defineComponent({
     components: {},
@@ -99,6 +103,7 @@ export default defineComponent({
                 },
                 scales: {
                     x: {
+                        type: 'time',
                         grid: {
                             color: colors.gridColor
                         },
